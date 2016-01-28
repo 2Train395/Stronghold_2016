@@ -43,10 +43,8 @@ public class Robot extends IterativeRobot {
 	final int ROLLER_OUT_AXIS = 3;
 	
 	//ROLLER
-	Talon leftRoller;
-	Talon rightRoller;
-	final int LEFT_ROLLER_CHANNEL = 5;
-	final int RIGHT_ROLLER_CHANNEL = 6;
+	Talon frontRoller;
+	final int FRONT_ROLLER_CHANNEL = 5;
 	
 	//AUTON
 	int autonStage = 1;
@@ -57,12 +55,15 @@ public class Robot extends IterativeRobot {
     
     	//DRIVE
     	robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
+    	robotDrive.setInvertedMotor(MotorType.kFrontRight, true);
+    	robotDrive.setInvertedMotor(MotorType.kRearLeft, true);
+    	robotDrive.setInvertedMotor(MotorType.kRearRight, true);
+    	robotDrive.setInvertedMotor(MotorType.kFrontLeft, true);
     	robotDrive.setExpiration(0.1); 
     	robotDrive.setSafetyEnabled(true); 
     
     	//ROLLER
-    	leftRoller = new Talon(LEFT_ROLLER_CHANNEL);
-    	rightRoller = new Talon(RIGHT_ROLLER_CHANNEL);
+    	frontRoller = new Talon(FRONT_ROLLER_CHANNEL);
     	
     	//JOYSTICK & XBOX
     	driveStick = new Joystick(DRIVE_STICK_CHANNEL);
@@ -89,21 +90,17 @@ public class Robot extends IterativeRobot {
     	manualDrive();
     	
     	if(xboxController.getRawAxis(ROLLER_IN_AXIS) > 0.5){
-    		rightRoller.set(1.0);
-    		leftRoller.set(1.0);
+    		frontRoller.set(1.0);
     	}
     	else{
-    		rightRoller.set(0.0);
-    		leftRoller.set(0.0);
+    		frontRoller.set(0.0);
     	}
     	
     	if(xboxController.getRawAxis(ROLLER_OUT_AXIS) > 0.5){
-    		rightRoller.set(-1.0);
-    		leftRoller.set(-1.0);
+    		frontRoller.set(-1.0);
     	}
     	else{
-    		rightRoller.set(0.0);
-    		leftRoller.set(0.0);
+    		frontRoller.set(0.0);
     	}
     }
     
