@@ -47,9 +47,10 @@ public class Robot extends IterativeRobot {
 	final int FRONT_ROLLER_CHANNEL = 5;
 	
 	//AUTON
-	int autonStage = 1;
-	Timer autonTimer;
-	boolean sequenceComplete;
+	final int AUTON_MODE = 1; // 1 == LOW BAR
+	int autonStage = 1; // Stages in auton meaning different actions in different stages
+	Timer autonTimer; //Used to calculate time in auton
+	boolean sequenceComplete; // boolean = true or false
 
     public void robotInit() {
     
@@ -70,8 +71,8 @@ public class Robot extends IterativeRobot {
     	xboxController = new Joystick(XBOX_CONTROLLER_CHANNEL);
 	
     	//AUTON
-    	autonTimer = new Timer();
-    	sequenceComplete = false;
+    	autonTimer = new Timer(); 
+    	sequenceComplete = false; //Always starts false
     }
 
     /**
@@ -79,7 +80,14 @@ public class Robot extends IterativeRobot {
      */
     
     public void autonomousPeriodic() {
-    	
+    /**
+     * This first mode tells the robot to move forward under 
+     * the low bar to then releasing the ball and finally 
+     * moving backwards to start teleop at the neutral zone.  	
+     */
+    	if (AUTON_MODE == 1){
+    		
+    	}
     }
 
     /**
