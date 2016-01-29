@@ -35,6 +35,10 @@ public class Robot extends IterativeRobot {
 	//JOYSTICKS
 	Joystick driveStick;
 	final int DRIVE_STICK_CHANNEL = 1;
+	double twist;
+	double forwardBack;
+    final static double TURN_TOLERANCE_PERCENT = 0.1;
+    final static double DRIVE_TOLERANCE_PRECENT = 0.25;
 	
 	//XBOX
 	Joystick xboxController;
@@ -43,36 +47,35 @@ public class Robot extends IterativeRobot {
 	final int ROLLER_OUT_AXIS = 3;
 	
 	//ROLLER
-	Talon frontRoller;
-	final int FRONT_ROLLER_CHANNEL = 5;
+	Talon leftRoller;
+	Talon rightRoller;
+	final int LEFT_ROLLER_CHANNEL = 5;
+	final int RIGHT_ROLLER_CHANNEL = 6;
 	
 	//AUTON
-	final int AUTON_MODE = 1; // 1 == LOW BAR
-	int autonStage = 1; // Stages in auton meaning different actions in different stages
-	Timer autonTimer; //Used to calculate time in auton
-	boolean sequenceComplete; // boolean = true or false
+	int autonStage = 1;
+	Timer autonTimer;
+	boolean sequenceComplete;
 
     public void robotInit() {
     
     	//DRIVE
     	robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
-    	robotDrive.setInvertedMotor(MotorType.kFrontRight, true);
-    	robotDrive.setInvertedMotor(MotorType.kRearLeft, true);
-    	robotDrive.setInvertedMotor(MotorType.kRearRight, true);
-    	robotDrive.setInvertedMotor(MotorType.kFrontLeft, true);
     	robotDrive.setExpiration(0.1); 
     	robotDrive.setSafetyEnabled(true); 
     
     	//ROLLER
-    	frontRoller = new Talon(FRONT_ROLLER_CHANNEL);
+    	leftRoller = new Talon(LEFT_ROLLER_CHANNEL);
+    	rightRoller = new Talon(RIGHT_ROLLER_CHANNEL);
     	
     	//JOYSTICK & XBOX
     	driveStick = new Joystick(DRIVE_STICK_CHANNEL);
     	xboxController = new Joystick(XBOX_CONTROLLER_CHANNEL);
-	
+    	twist = 0.0;
+    	
     	//AUTON
-    	autonTimer = new Timer(); 
-    	sequenceComplete = false; //Always starts false
+    	autonTimer = new Timer();
+    	sequenceComplete = false;
     }
 
     /**
@@ -80,14 +83,7 @@ public class Robot extends IterativeRobot {
      */
     
     public void autonomousPeriodic() {
-    /**
-     * This first mode tells the robot to move forward under 
-     * the low bar to then releasing the ball and finally 
-     * moving backwards to start teleop at the neutral zone.  	
-     */
-    	if (AUTON_MODE == 1){
-    		
-    	}
+    	
     }
 
     /**
@@ -98,17 +94,21 @@ public class Robot extends IterativeRobot {
     	manualDrive();
     	
     	if(xboxController.getRawAxis(ROLLER_IN_AXIS) > 0.5){
-    		frontRoller.set(1.0);
+    		rightRoller.set(1.0);
+    		leftRoller.set(1.0);
     	}
     	else{
-    		frontRoller.set(0.0);
+    		rightRoller.set(0.0);
+    		leftRoller.set(0.0);
     	}
     	
     	if(xboxController.getRawAxis(ROLLER_OUT_AXIS) > 0.5){
-    		frontRoller.set(-1.0);
+    		rightRoller.set(-1.0);
+    		leftRoller.set(-1.0);
     	}
     	else{
-    		frontRoller.set(0.0);
+    		rightRoller.set(0.0);
+    		leftRoller.set(0.0);
     	}
     }
     
@@ -120,7 +120,21 @@ public class Robot extends IterativeRobot {
     }
     public void manualDrive(){
     	
-    	robotDrive.arcadeDrive(driveStick);
+    	double desiredTwist = driveStick.getRawAxis(3);// Extreme 3D Pro Z-Axis
+
+        double error = desiredTwist - twist;
+
+        twist += error * TURN_TOLERANCE_PERCENT;
+        
+        // Forward / Back acceleration
+        
+        double desiredFB = driveStick.getRawAxis(2); // Extreme 3D Pro Y-Axis
+
+        double fBerror = desiredFB - forwardBack;
+        
+        forwardBack += fBerror * DRIVE_TOLERANCE_PRECENT;
+        
+        robotDrive.arcadeDrive(forwardBack, twist);
     
     }
 }
