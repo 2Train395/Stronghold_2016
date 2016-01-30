@@ -92,6 +92,8 @@ public class Robot extends IterativeRobot {
      */
     	if (AUTON_MODE == 1){
     		
+    		//Reset and Start the Timer
+    		if (Auton)
     	}
     }
 
@@ -124,20 +126,31 @@ public class Robot extends IterativeRobot {
     
     }
     public void manualDrive(){
+    	// Turning acceleration
     	
     	double desiredTwist = driveStick.getRawAxis(3);// Extreme 3D Pro Z-Axis
-
-        double error = desiredTwist - twist;
-
-        twist += error * TURN_TOLERANCE_PERCENT;
+    	
+    	twist += desiredTwist * TURN_TOLERANCE_PERCENT;
+    	
+        // double error = desiredTwist - twist;
         
         // Forward / Back acceleration
         
         double desiredFB = driveStick.getRawAxis(2); // Extreme 3D Pro Y-Axis
 
-        double fBerror = desiredFB - forwardBack;
+        forwardBack += desiredFB * DRIVE_TOLERANCE_PRECENT;
+
+        //double fBerror = desiredFB - forwardBack;
         
-        forwardBack += fBerror * DRIVE_TOLERANCE_PRECENT;
+        //Stop Mechanism
+        if(desiredTwist==0.0){
+        	twist = 0.0;
+        	}
+        
+        // Stop Mechanism
+        if(desiredFB==0.0){
+        	forwardBack = 0.0;
+        	}
         
         robotDrive.arcadeDrive(forwardBack, twist);
     
