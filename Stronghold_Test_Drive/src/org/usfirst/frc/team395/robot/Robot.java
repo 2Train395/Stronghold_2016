@@ -9,11 +9,10 @@
 package org.usfirst.frc.team395.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive; 
 import edu.wpi.first.wpilibj.RobotDrive.MotorType;
+import edu.wpi.first.wpilibj.Talon;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -24,99 +23,66 @@ import edu.wpi.first.wpilibj.RobotDrive.MotorType;
  */
 public class Robot extends IterativeRobot {
    
-	//DRIVE
+	// DRIVE
 	RobotDrive robotDrive;
 	final double DRIVE_FACTOR = 0.5;
-	final int frontLeftChannel	= 1;
-	final int rearLeftChannel	= 2;
-	final int frontRightChannel	= 3;
-	final int rearRightChannel	= 4;
+	final double ROTATE_FACTOR = 0.25;
+	final int frontLeftChannel	= 4;
+	final int rearLeftChannel	= 3;
+	final int frontRightChannel	= 1;
+	final int rearRightChannel	= 2;
+	boolean twistZ = false;
 	
-	//JOYSTICKS
+	// JOYSTICKS
 	Joystick driveStick;
-	final int DRIVE_STICK_CHANNEL = 1;
-	double twist;
-	double forwardBack;
-    final static double TURN_TOLERANCE_PERCENT = 0.1;
-    final static double DRIVE_TOLERANCE_PRECENT = 0.25;
-	
-	//XBOX
 	Joystick xboxController;
+	final int driveStickChannel = 1;
 	final int XBOX_CONTROLLER_CHANNEL = 2;
-	final int ROLLER_IN_AXIS = 2;
-	final int ROLLER_OUT_AXIS = 3;
+	final int ROLLER_IN = 6;
+	final int ROLLER_OUT = 5;
 	
-	//ROLLER
-	Talon frontRoller;
-	final int FRONT_ROLLER_CHANNEL = 5;
+	// ROLLER
+	Talon roller;
+	final int ROLLER_CHANNEL = 1;
+	final double ROLLER_SPEED = 1.0;
 	
-	//AUTON
-	final int AUTON_MODE = 1; // 1 == LOW BAR
-	int autonStage = 1; // Stages in auton meaning different actions in different stages
-	Timer autonTimer; //Used to calculate time in auton
-	boolean sequenceComplete; // boolean = true or false
-
     public void robotInit() {
     
-    	//DRIVE
-    	robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
-    	robotDrive.setInvertedMotor(MotorType.kFrontRight, true);
-    	robotDrive.setInvertedMotor(MotorType.kRearLeft, true);
-    	robotDrive.setInvertedMotor(MotorType.kRearRight, true);
-    	robotDrive.setInvertedMotor(MotorType.kFrontLeft, true);
-    	robotDrive.setExpiration(0.1); 
-    	robotDrive.setSafetyEnabled(true); 
+    //DRIVE
+    robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
+    robotDrive.setExpiration(0.1); 
+	robotDrive.setSafetyEnabled(true); 
+	robotDrive.setInvertedMotor(MotorType.kFrontRight, true);
+	robotDrive.setInvertedMotor(MotorType.kRearLeft, true);
+	robotDrive.setInvertedMotor(MotorType.kRearRight, true);
+	robotDrive.setInvertedMotor(MotorType.kFrontLeft, true);
     
-    	//ROLLER
-    	frontRoller = new Talon(FRONT_ROLLER_CHANNEL);
-    	
-    	//JOYSTICK & XBOX
-    	driveStick = new Joystick(DRIVE_STICK_CHANNEL);
-    	xboxController = new Joystick(XBOX_CONTROLLER_CHANNEL);
-    	twist = 0.0;
-    	
-    	//AUTON
-    	autonTimer = new Timer();
-    	sequenceComplete = false;
+	// JOYSTICK
+	driveStick = new Joystick(driveStickChannel);
+	xboxController = new Joystick(XBOX_CONTROLLER_CHANNEL);
+	
+	// ROLLER
+	roller = new Talon(ROLLER_CHANNEL);
+
+    }
+    
+    public void autonomousInit() {
+  
     }
 
-    /**
+    /**1
      * This function is called periodically during autonomous
      */
-    
     public void autonomousPeriodic() {
-    	/**
-     * This first mode tells the robot to move forward under 
-     * the low bar to then releasing the ball and finally 
-     * moving backwards to start teleop at the neutral zone.  	
-     */
-    	if (AUTON_MODE == 1){
-    		
-    		//Reset and Start the Timer
-    		if (Auton)
-    	}
+    	
     }
 
     /**
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
-        
-    	manualDrive();
-    	
-    	if(xboxController.getRawAxis(ROLLER_IN_AXIS) > 0.5){
-    		frontRoller.set(1.0);
-    	}
-    	else{
-    		frontRoller.set(0.0);
-    	}
-    	
-    	if(xboxController.getRawAxis(ROLLER_OUT_AXIS) > 0.5){
-    		frontRoller.set(-1.0);
-    	}
-    	else{
-    		frontRoller.set(0.0);
-    	}
+        rollerControl();
+    	manualDrive(twistZ);
     }
     
     /**
@@ -125,34 +91,35 @@ public class Robot extends IterativeRobot {
     public void testPeriodic() {
     
     }
-    public void manualDrive(){
-    	// Turning acceleration
+    public void manualDrive(boolean twistTypeZ){
+    	double rotateValue;
+    	double driveValue = driveStick.getY();
+    	if(twistTypeZ) {
+    		
+    		rotateValue = driveStick.getZ();
+    		
+    	}
+    	else {
+    		
+    		rotateValue = driveStick.getX();
     	
-    	double desiredTwist = driveStick.getRawAxis(3);// Extreme 3D Pro Z-Axis
-    	
-    	twist += desiredTwist * TURN_TOLERANCE_PERCENT;
-    	
-        // double error = desiredTwist - twist;
-        
-        // Forward / Back acceleration
-        
-        double desiredFB = driveStick.getRawAxis(2); // Extreme 3D Pro Y-Axis
-
-        forwardBack += desiredFB * DRIVE_TOLERANCE_PRECENT;
-
-        //double fBerror = desiredFB - forwardBack;
-        
-        //Stop Mechanism
-        if(desiredTwist==0.0){
-        	twist = 0.0;
-        	}
-        
-        // Stop Mechanism
-        if(desiredFB==0.0){
-        	forwardBack = 0.0;
-        	}
-        
-        robotDrive.arcadeDrive(forwardBack, twist);
+    	}
+  	
+    	driveValue *= DRIVE_FACTOR;
+    	rotateValue *= ROTATE_FACTOR;
+    	robotDrive.arcadeDrive(driveValue, rotateValue);
+    }
     
+    public void rollerControl(){	
+    	if(xboxController.getRawButton(ROLLER_IN)){	
+    		roller.set(ROLLER_SPEED);
+    	}
+    	else if(xboxController.getRawButton(ROLLER_OUT)){
+    		roller.set(-ROLLER_SPEED);
+    	}
+    	else{
+			roller.set(0.0);
+		}
+    	
     }
 }
