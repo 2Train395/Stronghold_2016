@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive; 
 import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -25,13 +26,13 @@ public class Robot extends IterativeRobot {
    
 	// DRIVE
 	RobotDrive robotDrive;
-	final double DRIVE_FACTOR = 0.5;
-	final double ROTATE_FACTOR = 0.25;
+	final double DRIVE_FACTOR = 0.5;					//----TEST`
+	final double ROTATE_FACTOR = 0.25;					//----TEST
 	final int frontLeftChannel	= 4;
 	final int rearLeftChannel	= 3;
 	final int frontRightChannel	= 1;
 	final int rearRightChannel	= 2;
-	boolean twistZ = false;
+	boolean twistZ = true;								//----CAN CHANGE
 	
 	// JOYSTICKS
 	Joystick driveStick;
@@ -44,45 +45,217 @@ public class Robot extends IterativeRobot {
 	// ROLLER
 	Talon roller;
 	final int ROLLER_CHANNEL = 1;
-	final double ROLLER_SPEED = 1.0;
+	final double ROLLER_SPEED = 0.75;					//----TEST
+	
+	// AUTONOMOUS
+	double autonMoveSpeed;
+	double autonRotateSpeed;
+	int autonStage = 1;
+	final int AUTON_MODE = 1;
+	Timer autonTimer;
 	
     public void robotInit() {
     
-    //DRIVE
-    robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
-    robotDrive.setExpiration(0.1); 
-	robotDrive.setSafetyEnabled(true); 
-	robotDrive.setInvertedMotor(MotorType.kFrontRight, true);
-	robotDrive.setInvertedMotor(MotorType.kRearLeft, true);
-	robotDrive.setInvertedMotor(MotorType.kRearRight, true);
-	robotDrive.setInvertedMotor(MotorType.kFrontLeft, true);
-    
-	// JOYSTICK
-	driveStick = new Joystick(driveStickChannel);
-	xboxController = new Joystick(XBOX_CONTROLLER_CHANNEL);
+	    //DRIVE
+	    robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
+	    robotDrive.setExpiration(0.1); 
+		robotDrive.setSafetyEnabled(true); 
+		robotDrive.setInvertedMotor(MotorType.kFrontRight, true);
+		robotDrive.setInvertedMotor(MotorType.kRearLeft, true);
+		robotDrive.setInvertedMotor(MotorType.kRearRight, true);
+		robotDrive.setInvertedMotor(MotorType.kFrontLeft, true);
+	    
+		// JOYSTICK
+		driveStick = new Joystick(driveStickChannel);
+		xboxController = new Joystick(XBOX_CONTROLLER_CHANNEL);
+		
+		// ROLLER
+		roller = new Talon(ROLLER_CHANNEL);
 	
-	// ROLLER
-	roller = new Talon(ROLLER_CHANNEL);
-
     }
     
-    public void autonomousInit() {
-  
-    }
-
-    /**1
-     * This function is called periodically during autonomous
-     */
     public void autonomousPeriodic() {
-    	
-    }
+    
+	    if (AUTON_MODE == 1){
+	    	if(autonStage==1){
+	        	
+	   		autonTimer.reset();
+	   		autonTimer.start();
+	    		
+	    		autonMoveSpeed = 0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    		
+	    	autonStage = 2;
+	    	autonTimer.stop();
+	    	}
+	    	else if(autonStage == 2){
+	    		
+	   		autonTimer.reset();
+    		autonTimer.start();
+	    		
+	    		robotDrive.arcadeDrive(0.0 , 0.0);
+	    		roller.set(-ROLLER_SPEED);
+	    		
+	   		autonStage = 3;
+	   		autonTimer.stop();
+	    	}
+	    	else if(autonStage == 3){
+	    		
+	    	autonTimer.reset();
+	   		autonTimer.start();
+	    		
+	    		autonMoveSpeed = -0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    		
+	    	autonStage = 4;
+	    	autonTimer.stop();
+	    	
+	    	}
+	    	
+	    	else if(autonStage == 4){
+	    	
+	    	autonTimer.reset();
+	    	autonTimer.start();
+	    	
+	    		robotDrive.arcadeDrive(0.0 , 0.0);
+	    	
+	    	autonTimer.stop();
+	    	}
+	    	
+	    	else{
+	    		
+	    		robotDrive.arcadeDrive(0.0, 0.0);
+	    	}
+	    }
+	    
+	    /**
+	     * 				MODE = 2
+	     * */
+	    if (AUTON_MODE == 2){
+		    if (AUTON_MODE == 1){
+		    	if(autonStage==1){
+		        	
+		   		autonTimer.reset();
+		   		autonTimer.start();
+		    		
+		    		autonMoveSpeed = 0.9;
+		    		autonRotateSpeed = 0.0;
+		    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+		    		
+		    	autonStage = 2;
+		    	autonTimer.stop();
+		    	}
+		    	else if(autonStage == 2){
+		    		
+		   		autonTimer.reset();
+	    		autonTimer.start();
+		    		
+		    		robotDrive.arcadeDrive(0.0 , 0.0);
+		    		roller.set(-ROLLER_SPEED);
+		    		
+		   		autonStage = 3;
+		   		autonTimer.stop();
+		    	}
+		    	else if(autonStage == 3){
+		    		
+		    	autonTimer.reset();
+		   		autonTimer.start();
+		    		
+		    		autonMoveSpeed = -0.9;
+		    		autonRotateSpeed = 0.0;
+		    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+		    		
+		    	autonStage = 4;
+		    	autonTimer.stop();
+		    	
+		    	}
+		    	
+		    	else if(autonStage == 4){
+		    	
+		    	autonTimer.reset();
+		    	autonTimer.start();
+		    	
+		    		robotDrive.arcadeDrive(0.0 , 0.0);
+		    	
+		    	autonTimer.stop();	
+		    	}
+		    	
+		    	else{
+		    		
+		    		robotDrive.arcadeDrive(0.0, 0.0);
+		    	}
+		    }
+	    }
+	    
+	    /**
+	     * 				MODE = 3
+	     * */
+	    if (AUTON_MODE == 3){
+		    if (AUTON_MODE == 1){
+		    	if(autonStage==1){
+		        	
+		   		autonTimer.reset();
+		   		autonTimer.start();
+		    		
+		    		autonMoveSpeed = 0.9;
+		    		autonRotateSpeed = 0.0;
+		    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+		    		
+		    	autonStage = 2;
+		    	autonTimer.stop();
+		    	}
+		    	else if(autonStage == 2){
+		    		
+		   		autonTimer.reset();
+	    		autonTimer.start();
+		    		
+		    		robotDrive.arcadeDrive(0.0 , 0.0);
+		    		roller.set(-ROLLER_SPEED);
+		    		
+		   		autonStage = 3;
+		   		autonTimer.stop();
+		    	}
+		    	else if(autonStage == 3){
+		    		
+		    	autonTimer.reset();
+		   		autonTimer.start();
+		    		
+		    		autonMoveSpeed = -0.9;
+		    		autonRotateSpeed = 0.0;
+		    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+		    		
+		    	autonStage = 4;
+		    	autonTimer.stop();
+		    	
+		    	}
+		    	
+		    	else if(autonStage == 4){
+		    	
+		    	autonTimer.reset();
+		    	autonTimer.start();
+		    	
+		    		robotDrive.arcadeDrive(0.0 , 0.0);
+		    	
+		    	autonTimer.stop();	
+		    	}
+		    	
+		    	else{
+		    		
+		    		robotDrive.arcadeDrive(0.0, 0.0);
+		    	}
+		    }
+	    }
 
-    /**
+    }
+    	    /**
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
-        rollerControl();
+    	
     	manualDrive(twistZ);
+    	rollerControl();
     }
     
     /**
@@ -92,17 +265,16 @@ public class Robot extends IterativeRobot {
     
     }
     public void manualDrive(boolean twistTypeZ){
+    	
     	double rotateValue;
     	double driveValue = driveStick.getY();
     	if(twistTypeZ) {
     		
     		rotateValue = driveStick.getZ();
-    		
     	}
     	else {
     		
     		rotateValue = driveStick.getX();
-    	
     	}
   	
     	driveValue *= DRIVE_FACTOR;
@@ -111,14 +283,18 @@ public class Robot extends IterativeRobot {
     }
     
     public void rollerControl(){	
+    	
     	if(xboxController.getRawButton(ROLLER_IN)){	
+    		
     		roller.set(ROLLER_SPEED);
     	}
     	else if(xboxController.getRawButton(ROLLER_OUT)){
+    	
     		roller.set(-ROLLER_SPEED);
     	}
     	else{
-			roller.set(0.0);
+			
+    		roller.set(0.0);
 		}
     	
     }
