@@ -44,7 +44,7 @@ public class Robot extends IterativeRobot {
 	
 	// ROLLER
 	Talon roller;
-	final int ROLLER_CHANNEL = 1;
+	final int ROLLER_CHANNEL = 5;
 	final double ROLLER_SPEED = 0.75;					//----TEST
 	
 	// AUTONOMOUS
@@ -134,8 +134,8 @@ public class Robot extends IterativeRobot {
 	     * 				MODE  2
 	     * */
 	    if (AUTON_MODE == 2){
-		    if (AUTON_MODE == 1){
-		    	if(autonStage==1){
+
+	    	if(autonStage==1){
 		        	
 		   		autonTimer.reset();
 		   		autonTimer.start();
@@ -187,12 +187,10 @@ public class Robot extends IterativeRobot {
 		    		robotDrive.arcadeDrive(0.0, 0.0);
 		    	}
 		    }
-	    }
-	    
 	    
 	    if (AUTON_MODE == 3){
-		    if (AUTON_MODE == 1){
-		    	if(autonStage==1){
+	    	
+		   	if(autonStage==1){
 		        	
 		   		autonTimer.reset();
 		   		autonTimer.start();
@@ -246,8 +244,7 @@ public class Robot extends IterativeRobot {
 		    }
 	    }
 
-    }
-    	    /**
+    /**
      * This function is called periodically during operator control
      */
     public void teleopPeriodic() {
