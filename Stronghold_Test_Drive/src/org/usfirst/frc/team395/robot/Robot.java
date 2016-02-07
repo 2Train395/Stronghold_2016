@@ -27,26 +27,38 @@ public class Robot extends IterativeRobot {
 	// DRIVE
 	RobotDrive robotDrive;
 	final double DRIVE_FACTOR = 0.5;					//----TEST
-	final double ROTATE_FACTOR = 0.25;					//----TEST
+	final double ROTATE_FACTOR = 0.9;					//----TEST
 	final int frontLeftChannel	= 4;
 	final int rearLeftChannel	= 3;
 	final int frontRightChannel	= 1;
 	final int rearRightChannel	= 2;
-	boolean twistZ = true;								//----CAN CHANGE
+	boolean twistZ = true;
+	boolean xbRoller = true;
+	//----CAN CHANGE
 	
 	// JOYSTICKS
 	Joystick driveStick;
 	Joystick xboxController;
 	final int driveStickChannel = 1;
 	final int XBOX_CONTROLLER_CHANNEL = 2;
-	final int ROLLER_IN = 6;
-	final int ROLLER_OUT = 5;
-	
+	final int ROLLER_INXB = 6;
+	final int ROLLER_OUTXB = 5;
+	final int ROLLER_INJS = 1;
+	final int ROLLER_OUTJS = 2;
+	final int ARM_UP = 4;
+	final int ARM_DOWN = 1;
+
 	// ROLLER
 	Talon roller;
 	final int ROLLER_CHANNEL = 5;
 	final double ROLLER_SPEED = 0.75;					//----TEST
-	
+
+	// ARM
+	Talon right_arm;
+	Talon left_arm;
+	final int LEFT_ARM_CHANNEL = 6;
+	final int RIGHT_ARM_CHANNEL = 7;
+		
 	// AUTONOMOUS
 	double autonMoveSpeed;
 	double autonRotateSpeed;
@@ -71,7 +83,11 @@ public class Robot extends IterativeRobot {
 		
 		// ROLLER
 		roller = new Talon(ROLLER_CHANNEL);
-	
+		
+		// ARM
+		left_arm = new Talon(LEFT_ARM_CHANNEL);
+		right_arm = new Talon(RIGHT_ARM_CHANNEL);
+		
     }
     
     public void autonomousPeriodic() {
@@ -249,8 +265,9 @@ public class Robot extends IterativeRobot {
      */
     public void teleopPeriodic() {
     	
-    	manualDrive(twistZ);
+    	manualDrive();
     	rollerControl();
+    	armControl();
     }
     
     /**
@@ -259,31 +276,30 @@ public class Robot extends IterativeRobot {
     public void testPeriodic() {
     
     }
-    public void manualDrive(boolean twistTypeZ){
+    public void manualDrive(){
     	
     	double rotateValue;
     	double driveValue = driveStick.getY();
-    	if(twistTypeZ) {
+    	if(twistZ) {
     		
-    		rotateValue = driveStick.getZ();
-    	}
+    		rotateValue = driveStick.getZ();    	}
     	else {
     		
     		rotateValue = driveStick.getX();
     	}
   	
-    	driveValue *= DRIVE_FACTOR;
+    	//driveValue *= DRIVE_FACTOR;
     	rotateValue *= ROTATE_FACTOR;
-    	robotDrive.arcadeDrive(driveValue, rotateValue);
+    	robotDrive.arcadeDrive(driveValue , rotateValue);
     }
     
     public void rollerControl(){	
     	
-    	if(xboxController.getRawButton(ROLLER_IN)){	
+    	if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
     		
     		roller.set(ROLLER_SPEED);
     	}
-    	else if(xboxController.getRawButton(ROLLER_OUT)){
+    	else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
     	
     		roller.set(-ROLLER_SPEED);
     	}
@@ -292,5 +308,24 @@ public class Robot extends IterativeRobot {
     		roller.set(0.0);
 		}
     	
+    }
+    
+    public void armControl() {
+    	
+    	if (xboxController.getRawButton(ARM_UP)) {
+    		
+    		right_arm.set(1.0);
+    		left_arm.set(1.0);
+    	}
+    	else if (xboxController.getRawButton(ARM_DOWN)) {
+    		
+    		right_arm.set(-1.0);
+    		left_arm.set(-1.0);
+    	}
+    	else {
+    		
+    		right_arm.set(0.0);
+    		left_arm.set(0.0);
+    	}
     }
 }
