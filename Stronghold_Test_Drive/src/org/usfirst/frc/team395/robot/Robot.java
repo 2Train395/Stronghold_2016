@@ -27,7 +27,7 @@ public class Robot extends IterativeRobot {
 	// DRIVE
 	RobotDrive robotDrive;
 	final double DRIVE_FACTOR = 0.5;					//----TEST
-	final double ROTATE_FACTOR = 0.25;					//----TEST
+	final double ROTATE_FACTOR = 0.85;					//----TEST
 	final int frontLeftChannel	= 4;
 	final int rearLeftChannel	= 3;
 	final int frontRightChannel	= 1;
@@ -39,8 +39,8 @@ public class Robot extends IterativeRobot {
 	Joystick xboxController;
 	final int driveStickChannel = 1;
 	final int XBOX_CONTROLLER_CHANNEL = 2;
-	final int ROLLER_IN = 6;
 	final int ROLLER_OUT = 5;
+	final int ROLLER_IN = 6;
 	
 	// ROLLER
 	Talon roller;
@@ -48,11 +48,14 @@ public class Robot extends IterativeRobot {
 	final double ROLLER_SPEED = 0.75;					//----TEST
 	
 	// AUTONOMOUS
+	int autonStage = 1;
+	Timer autonTimer;
+	final int AUTON_MODE = 1;
 	double autonMoveSpeed;
 	double autonRotateSpeed;
-	int autonStage = 1;
-	final int AUTON_MODE = 1;
-	Timer autonTimer;
+	final double STOP_TIME = 1.00;
+	final double MOVE_TIME = 2.15;				// TEST BEFORE USING!!!
+	final double RELEASE_TIME = 1.0;
 	
     public void robotInit() {
     
@@ -81,40 +84,49 @@ public class Robot extends IterativeRobot {
 	        	
 	   		autonTimer.reset();
 	   		autonTimer.start();
+	    	
+	   		while(autonTimer.get() < MOVE_TIME){	
 	    		
-	    		autonMoveSpeed = 0.9;
+	   			autonMoveSpeed = 0.9;
 	    		autonRotateSpeed = 0.0;
 	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
-	    		
-	    	autonStage = 2;
-	    	autonTimer.stop();
 	    	}
-	    	else if(autonStage == 2){
+	    	
+	   		autonStage = 2;
+	    	autonTimer.stop();
+	   	}
+	    else if(autonStage == 2){
 	    		
 	   		autonTimer.reset();
     		autonTimer.start();
+	    	
+    		while(autonTimer.get() < RELEASE_TIME){	
 	    		
-	    		robotDrive.arcadeDrive(0.0 , 0.0);
+    			robotDrive.arcadeDrive(0.0 , 0.0);
 	    		roller.set(-ROLLER_SPEED);
-	    		
-	   		autonStage = 3;
-	   		autonTimer.stop();
 	    	}
-	    	else if(autonStage == 3){
+	   		
+    		autonStage = 3;
+	   		autonTimer.stop();
+	    }
+	    else if(autonStage == 3){
 	    		
 	    	autonTimer.reset();
 	   		autonTimer.start();
-	    		
-	    		autonMoveSpeed = -0.9;
+	    	
+	   		while(autonTimer.get() < MOVE_TIME){	
+	    	
+	   			autonMoveSpeed = -0.9;
 	    		autonRotateSpeed = 0.0;
 	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
-	    		
+	    	}
+	    	
 	    	autonStage = 4;
 	    	autonTimer.stop();
 	    	
-	    	}
-	    	
-	    	else if(autonStage == 4){
+	   	}
+	   	
+	    else if(autonStage == 4){
 	    	
 	    	autonTimer.reset();
 	    	autonTimer.start();
@@ -122,127 +134,130 @@ public class Robot extends IterativeRobot {
 	    		robotDrive.arcadeDrive(0.0 , 0.0);
 	    	
 	    	autonTimer.stop();
-	    	}
 	    	
-	    	else{
-	    		
-	    		robotDrive.arcadeDrive(0.0, 0.0);
 	    	}
 	    }
 	    
-	    /**
-	     * 				MODE  2
-	     * */
 	    if (AUTON_MODE == 2){
 
 	    	if(autonStage==1){
-		        	
-		   		autonTimer.reset();
-		   		autonTimer.start();
-		    		
-		    		autonMoveSpeed = 0.9;
-		    		autonRotateSpeed = 0.0;
-		    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
-		    		
-		    	autonStage = 2;
-		    	autonTimer.stop();
-		    	}
-		    	else if(autonStage == 2){
-		    		
-		   		autonTimer.reset();
-	    		autonTimer.start();
-		    		
-		    		robotDrive.arcadeDrive(0.0 , 0.0);
-		    		roller.set(-ROLLER_SPEED);
-		    		
-		   		autonStage = 3;
-		   		autonTimer.stop();
-		    	}
-		    	else if(autonStage == 3){
-		    		
-		    	autonTimer.reset();
-		   		autonTimer.start();
-		    		
-		    		autonMoveSpeed = -0.9;
-		    		autonRotateSpeed = 0.0;
-		    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
-		    		
-		    	autonStage = 4;
-		    	autonTimer.stop();
-		    	
-		    	}
-		    	
-		    	else if(autonStage == 4){
-		    	
-		    	autonTimer.reset();
-		    	autonTimer.start();
-		    	
-		    		robotDrive.arcadeDrive(0.0 , 0.0);
-		    	
-		    	autonTimer.stop();	
-		    	}
-		    	
-		    	else{
-		    		
-		    		robotDrive.arcadeDrive(0.0, 0.0);
-		    	}
-		    }
-	    
+	        	
+	   		autonTimer.reset();
+	   		autonTimer.start();
+	    	
+	   		while(autonTimer.get() < MOVE_TIME){	
+	    		
+	   			autonMoveSpeed = 0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    	}
+	    	
+	   		autonStage = 2;
+	    	autonTimer.stop();
+	   	}
+	    else if(autonStage == 2){
+	    		
+	   		autonTimer.reset();
+    		autonTimer.start();
+	    	
+    		while(autonTimer.get() < RELEASE_TIME){	
+	    		
+    			robotDrive.arcadeDrive(0.0 , 0.0);
+	    		roller.set(-ROLLER_SPEED);
+	    	}
+	   		
+    		autonStage = 3;
+	   		autonTimer.stop();
+	    }
+	    else if(autonStage == 3){
+	    		
+	    	autonTimer.reset();
+	   		autonTimer.start();
+	    	
+	   		while(autonTimer.get() < MOVE_TIME){	
+	    	
+	   			autonMoveSpeed = -0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    	}
+	    	
+	    	autonStage = 4;
+	    	autonTimer.stop();
+	    	
+	   	}
+	   	
+	    else if(autonStage == 4){
+	    	
+	    	autonTimer.reset();
+	    	autonTimer.start();
+	    	
+	    		robotDrive.arcadeDrive(0.0 , 0.0);
+	    	
+	    	autonTimer.stop();
+	    	
+	    	}
+	    }
+
 	    if (AUTON_MODE == 3){
 	    	
-		   	if(autonStage==1){
-		        	
-		   		autonTimer.reset();
-		   		autonTimer.start();
-		    		
-		    		autonMoveSpeed = 0.9;
-		    		autonRotateSpeed = 0.0;
-		    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
-		    		
-		    	autonStage = 2;
-		    	autonTimer.stop();
-		    	}
-		    	else if(autonStage == 2){
-		    		
-		   		autonTimer.reset();
-	    		autonTimer.start();
-		    		
-		    		robotDrive.arcadeDrive(0.0 , 0.0);
-		    		roller.set(-ROLLER_SPEED);
-		    		
-		   		autonStage = 3;
-		   		autonTimer.stop();
-		    	}
-		    	else if(autonStage == 3){
-		    		
-		    	autonTimer.reset();
-		   		autonTimer.start();
-		    		
-		    		autonMoveSpeed = -0.9;
-		    		autonRotateSpeed = 0.0;
-		    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
-		    		
-		    	autonStage = 4;
-		    	autonTimer.stop();
-		    	
-		    	}
-		    	
-		    	else if(autonStage == 4){
-		    	
-		    	autonTimer.reset();
-		    	autonTimer.start();
-		    	
-		    		robotDrive.arcadeDrive(0.0 , 0.0);
-		    	
-		    	autonTimer.stop();	
-		    	}
-		    	
-		    	else{
-		    		
-		    		robotDrive.arcadeDrive(0.0, 0.0);
-		    	}
-		    }
+	    	if(autonStage==1){
+	        	
+	   		autonTimer.reset();
+	   		autonTimer.start();
+	    	
+	   		while(autonTimer.get() < MOVE_TIME){	
+	    		
+	   			autonMoveSpeed = 0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    	}
+	    	
+	   		autonStage = 2;
+	    	autonTimer.stop();
+	   	}
+	    else if(autonStage == 2){
+	    		
+	   		autonTimer.reset();
+    		autonTimer.start();
+	    	
+    		while(autonTimer.get() < RELEASE_TIME){	
+	    		
+    			robotDrive.arcadeDrive(0.0 , 0.0);
+	    		roller.set(-ROLLER_SPEED);
+	    	}
+	   		
+    		autonStage = 3;
+	   		autonTimer.stop();
 	    }
+	    else if(autonStage == 3){
+	    		
+	    	autonTimer.reset();
+	   		autonTimer.start();
+	    	
+	   		while(autonTimer.get() < MOVE_TIME){	
+	    	
+	   			autonMoveSpeed = -0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    	}
+	    	
+	    	autonStage = 4;
+	    	autonTimer.stop();
+	    	
+	   	}
+	   	
+	    else if(autonStage == 4){
+	    	
+	    	autonTimer.reset();
+	    	autonTimer.start();
+	    	
+	    		robotDrive.arcadeDrive(0.0 , 0.0);
+	    	
+	    	autonTimer.stop();
+	    	
+	    	}
+	    }
+	}
 
     /**
      * This function is called periodically during operator control
@@ -272,7 +287,7 @@ public class Robot extends IterativeRobot {
     		rotateValue = driveStick.getX();
     	}
   	
-    	driveValue *= DRIVE_FACTOR;
+    //	driveValue *= DRIVE_FACTOR;
     	rotateValue *= ROTATE_FACTOR;
     	robotDrive.arcadeDrive(driveValue, rotateValue);
     }
@@ -281,11 +296,11 @@ public class Robot extends IterativeRobot {
     	
     	if(xboxController.getRawButton(ROLLER_IN)){	
     		
-    		roller.set(ROLLER_SPEED);
+    		roller.set(1.0);
     	}
     	else if(xboxController.getRawButton(ROLLER_OUT)){
     	
-    		roller.set(-ROLLER_SPEED);
+    		roller.set(-1.0);
     	}
     	else{
 			
