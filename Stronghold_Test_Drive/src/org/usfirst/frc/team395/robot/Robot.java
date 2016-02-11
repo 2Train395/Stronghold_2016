@@ -28,9 +28,14 @@ public class Robot extends IterativeRobot {
    
 	// DRIVE
 	RobotDrive robotDrive;
+<<<<<<< HEAD
 	double DRIVE_FACTOR = 0.5;
 	double ROTATE_FACTOR = 0.9;
 	double ARM_SPEED = 1.0;
+=======
+	final double DRIVE_FACTOR = 0.5;					//----TEST
+	final double ROTATE_FACTOR = 0.85;					//----TEST
+>>>>>>> origin/master
 	final int frontLeftChannel	= 4;
 	final int rearLeftChannel	= 3;
 	final int frontRightChannel	= 1;
@@ -42,6 +47,7 @@ public class Robot extends IterativeRobot {
 	Joystick xboxController;
 	final int driveStickChannel = 1;
 	final int XBOX_CONTROLLER_CHANNEL = 2;
+<<<<<<< HEAD
 	final int ROLLER_INXB = 6;
 	final int ROLLER_OUTXB = 5;
 	final int ROLLER_INJS = 1;
@@ -49,6 +55,11 @@ public class Robot extends IterativeRobot {
 	final int ARM_UP = 4;
 	final int ARM_DOWN = 1;
 
+=======
+	final int ROLLER_OUT = 5;
+	final int ROLLER_IN = 6;
+	
+>>>>>>> origin/master
 	// ROLLER
 	Talon roller;
 	final int ROLLER_CHANNEL = 5;
@@ -62,11 +73,14 @@ public class Robot extends IterativeRobot {
 	double REVERSE_ARM = 1;
 		
 	// AUTONOMOUS
+<<<<<<< HEAD
 	double autonMove;
 	double autonRotateSpeed;
+=======
+>>>>>>> origin/master
 	int autonStage = 1;
-	final int AUTON_MODE = 1;
 	Timer autonTimer;
+<<<<<<< HEAD
 	final double STOP_TIME = 1.00;
 	final double MOVE_TIME = 2.15;				// TEST BEFORE USING!!!
 	final double RELEASE_TIME = 1.0;
@@ -77,6 +91,14 @@ public class Robot extends IterativeRobot {
 	final double GYRO_SENSITIVITY = 0.007;
 	final int TEMP_CHANNEL = 1;
 	final double GYRO_CORRECTION = 0.03;
+=======
+	final int AUTON_MODE = 1;
+	double autonMoveSpeed;
+	double autonRotateSpeed;
+	final double STOP_TIME = 1.00;
+	final double MOVE_TIME = 2.15;				// TEST BEFORE USING!!!
+	final double RELEASE_TIME = 1.0;
+>>>>>>> origin/master
 	
     public void robotInit() {
     
@@ -117,6 +139,7 @@ public class Robot extends IterativeRobot {
 	        	
 	   		autonTimer.reset();
 	   		autonTimer.start();
+<<<<<<< HEAD
 	    	gyro.reset();
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
@@ -187,6 +210,15 @@ public class Robot extends IterativeRobot {
 	    		autonRotateSpeed = 0.0;
 	    		robotDrive.arcadeDrive(autonMove, autonRotateSpeed);
 	    	}
+=======
+	    	
+	   		while(autonTimer.get() < MOVE_TIME){	
+	    		
+	   			autonMoveSpeed = 0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    	}
+>>>>>>> origin/master
 	    	
 	   		autonStage = 2;
 	    	autonTimer.stop();
@@ -212,9 +244,78 @@ public class Robot extends IterativeRobot {
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
 	    	
+<<<<<<< HEAD
 	   			autonMove = -0.9;
 	    		autonRotateSpeed = 0.0;
 	    		robotDrive.arcadeDrive(autonMove, autonRotateSpeed);
+=======
+	   			autonMoveSpeed = -0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+>>>>>>> origin/master
+	    	}
+	    	
+	    	autonStage = 4;
+	    	autonTimer.stop();
+	    	
+	   	}
+	   	
+	    else if(autonStage == 4){
+	    	
+	    	autonTimer.reset();
+	    	autonTimer.start();
+	    	
+	    		robotDrive.arcadeDrive(0.0 , 0.0);
+	    	
+	    	autonTimer.stop();
+	    	
+	    	}
+	    }
+<<<<<<< HEAD
+
+=======
+	    
+	    if (AUTON_MODE == 2){
+
+	    	if(autonStage==1){
+	        	
+	   		autonTimer.reset();
+	   		autonTimer.start();
+	    	
+	   		while(autonTimer.get() < MOVE_TIME){	
+	    		
+	   			autonMoveSpeed = 0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    	}
+	    	
+	   		autonStage = 2;
+	    	autonTimer.stop();
+	   	}
+	    else if(autonStage == 2){
+	    		
+	   		autonTimer.reset();
+    		autonTimer.start();
+	    	
+    		while(autonTimer.get() < RELEASE_TIME){	
+	    		
+    			robotDrive.arcadeDrive(0.0 , 0.0);
+	    		roller.set(-ROLLER_SPEED);
+	    	}
+	   		
+    		autonStage = 3;
+	   		autonTimer.stop();
+	    }
+	    else if(autonStage == 3){
+	    		
+	    	autonTimer.reset();
+	   		autonTimer.start();
+	    	
+	   		while(autonTimer.get() < MOVE_TIME){	
+	    	
+	   			autonMoveSpeed = -0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
 	    	}
 	    	
 	    	autonStage = 4;
@@ -234,6 +335,7 @@ public class Robot extends IterativeRobot {
 	    	}
 	    }
 
+>>>>>>> origin/master
 	    if (AUTON_MODE == 3){
 	    	
 	    	if(autonStage==1){
@@ -243,9 +345,15 @@ public class Robot extends IterativeRobot {
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
 	    		
+<<<<<<< HEAD
 	   			autonMove = 0.9;
 	    		autonRotateSpeed = 0.0;
 	    		robotDrive.arcadeDrive(autonMove, autonRotateSpeed);
+=======
+	   			autonMoveSpeed = 0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+>>>>>>> origin/master
 	    	}
 	    	
 	   		autonStage = 2;
@@ -272,9 +380,15 @@ public class Robot extends IterativeRobot {
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
 	    	
+<<<<<<< HEAD
 	   			autonMove = -0.9;
 	    		autonRotateSpeed = 0.0;
 	    		robotDrive.arcadeDrive(autonMove, autonRotateSpeed);
+=======
+	   			autonMoveSpeed = -0.9;
+	    		autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+>>>>>>> origin/master
 	    	}
 	    	
 	    	autonStage = 4;
@@ -318,21 +432,30 @@ public class Robot extends IterativeRobot {
     	
     	double driveValue = driveStick.getY();	
     		
+<<<<<<< HEAD
     	robotDrive.arcadeDrive(driveValue , rotateValue * ROTATE_FACTOR);
 
     	SmartDashboard.putNumber("gyro", gyro.getAngle());
 
+=======
+    		rotateValue = driveStick.getX();
+    	}
+  	
+    //	driveValue *= DRIVE_FACTOR;
+    	rotateValue *= ROTATE_FACTOR;
+    	robotDrive.arcadeDrive(driveValue, rotateValue);
+>>>>>>> origin/master
     }
     
     public void rollerControl(){	
     	
     	if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
     		
-    		roller.set(ROLLER_SPEED);
+    		roller.set(1.0);
     	}
     	else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
     	
-    		roller.set(-ROLLER_SPEED);
+    		roller.set(-1.0);
     	}
     	else{
 			
