@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.AnalogGyro;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -26,15 +28,14 @@ public class Robot extends IterativeRobot {
    
 	// DRIVE
 	RobotDrive robotDrive;
-	final double DRIVE_FACTOR = 0.5;					//----TEST
-	final double ROTATE_FACTOR = 0.;					//----TEST
+	double DRIVE_FACTOR = 0.5;
+	double ROTATE_FACTOR = 0.9;
+	double ARM_SPEED = 1.0;
 	final int frontLeftChannel	= 4;
 	final int rearLeftChannel	= 3;
 	final int frontRightChannel	= 1;
 	final int rearRightChannel	= 2;
-	boolean twistZ = true;
 	boolean xbRoller = true;
-	//----CAN CHANGE
 	
 	// JOYSTICKS
 	Joystick driveStick;
@@ -54,13 +55,14 @@ public class Robot extends IterativeRobot {
 	final double ROLLER_SPEED = 0.75;					//----TEST
 
 	// ARM
-	Talon right_arm;
-	Talon left_arm;
+	Talon RIGHT_ARM;
+	Talon LEFT_ARM;
 	final int LEFT_ARM_CHANNEL = 6;
 	final int RIGHT_ARM_CHANNEL = 7;
+	double REVERSE_ARM = 1;
 		
 	// AUTONOMOUS
-	double autonMoveSpeed;
+	double autonMove;
 	double autonRotateSpeed;
 	int autonStage = 1;
 	final int AUTON_MODE = 1;
@@ -68,6 +70,13 @@ public class Robot extends IterativeRobot {
 	final double STOP_TIME = 1.00;
 	final double MOVE_TIME = 2.15;				// TEST BEFORE USING!!!
 	final double RELEASE_TIME = 1.0;
+	
+	//ANALOG 
+	AnalogGyro gyro;
+	final int GYRO_CHANNEL =  0;
+	final double GYRO_SENSITIVITY = 0.007;
+	final int TEMP_CHANNEL = 1;
+	final double GYRO_CORRECTION = 0.03;
 	
     public void robotInit() {
     
@@ -88,9 +97,17 @@ public class Robot extends IterativeRobot {
 		roller = new Talon(ROLLER_CHANNEL);
 		
 		// ARM
-		left_arm = new Talon(LEFT_ARM_CHANNEL);
-		right_arm = new Talon(RIGHT_ARM_CHANNEL);
+		LEFT_ARM = new Talon(LEFT_ARM_CHANNEL);
+		RIGHT_ARM = new Talon(RIGHT_ARM_CHANNEL);
 		
+		//ANALOG
+		gyro = new AnalogGyro(GYRO_CHANNEL);
+		gyro.setSensitivity(GYRO_SENSITIVITY);
+		gyro.calibrate();
+		
+		//DASHBOARD
+		SmartDashboard.putNumber("gyro", gyro.getAngle());
+
     }
     
     public void autonomousPeriodic() {
@@ -100,12 +117,13 @@ public class Robot extends IterativeRobot {
 	        	
 	   		autonTimer.reset();
 	   		autonTimer.start();
+	    	gyro.reset();
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
-	    		
-	   			autonMoveSpeed = 0.9;
-	    		autonRotateSpeed = 0.0;
-	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    		double angle = gyro.getAngle();
+	   			autonMove = 0.9;
+	    		//autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
 	    	}
 	    	
 	   		autonStage = 2;
@@ -126,15 +144,17 @@ public class Robot extends IterativeRobot {
 	   		autonTimer.stop();
 	    }
 	    else if(autonStage == 3){
-	    		
+	    	
 	    	autonTimer.reset();
 	   		autonTimer.start();
-	    	
+	   		gyro.reset();
+	   		
 	   		while(autonTimer.get() < MOVE_TIME){	
-	    	
-	   			autonMoveSpeed = -0.9;
-	    		autonRotateSpeed = 0.0;
-	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	   			
+	   			double angle = gyro.getAngle();
+	   			autonMove = -0.9;
+	    		//autonRotateSpeed = 0.0;
+	    		robotDrive.arcadeDrive(autonMove, angle * GYRO_CORRECTION);
 	    	}
 	    	
 	    	autonStage = 4;
@@ -163,9 +183,9 @@ public class Robot extends IterativeRobot {
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
 	    		
-	   			autonMoveSpeed = 0.9;
+	   			autonMove = 0.9;
 	    		autonRotateSpeed = 0.0;
-	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    		robotDrive.arcadeDrive(autonMove, autonRotateSpeed);
 	    	}
 	    	
 	   		autonStage = 2;
@@ -192,9 +212,9 @@ public class Robot extends IterativeRobot {
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
 	    	
-	   			autonMoveSpeed = -0.9;
+	   			autonMove = -0.9;
 	    		autonRotateSpeed = 0.0;
-	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    		robotDrive.arcadeDrive(autonMove, autonRotateSpeed);
 	    	}
 	    	
 	    	autonStage = 4;
@@ -223,9 +243,9 @@ public class Robot extends IterativeRobot {
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
 	    		
-	   			autonMoveSpeed = 0.9;
+	   			autonMove = 0.9;
 	    		autonRotateSpeed = 0.0;
-	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    		robotDrive.arcadeDrive(autonMove, autonRotateSpeed);
 	    	}
 	    	
 	   		autonStage = 2;
@@ -252,9 +272,9 @@ public class Robot extends IterativeRobot {
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
 	    	
-	   			autonMoveSpeed = -0.9;
+	   			autonMove = -0.9;
 	    		autonRotateSpeed = 0.0;
-	    		robotDrive.arcadeDrive(autonMoveSpeed, autonRotateSpeed);
+	    		robotDrive.arcadeDrive(autonMove, autonRotateSpeed);
 	    	}
 	    	
 	    	autonStage = 4;
@@ -280,6 +300,7 @@ public class Robot extends IterativeRobot {
      */
     public void teleopPeriodic() {
     	
+   // 	randomDashboard();
     	manualDrive();
     	rollerControl();
     	armControl();
@@ -293,19 +314,14 @@ public class Robot extends IterativeRobot {
     }
     public void manualDrive(){
     	
-    	double rotateValue;
-    	double driveValue = driveStick.getY();
-    	if(twistZ) {
+    	double rotateValue = driveStick.getZ();;
+    	
+    	double driveValue = driveStick.getY();	
     		
-    		rotateValue = driveStick.getZ();    	}
-    	else {
-    		
-    		rotateValue = driveStick.getX();
-    	}
-  	
-    	//driveValue *= DRIVE_FACTOR;
-    	rotateValue *= ROTATE_FACTOR;
-    	robotDrive.arcadeDrive(driveValue , rotateValue);
+    	robotDrive.arcadeDrive(driveValue , rotateValue * ROTATE_FACTOR);
+
+    	SmartDashboard.putNumber("gyro", gyro.getAngle());
+
     }
     
     public void rollerControl(){	
@@ -327,20 +343,35 @@ public class Robot extends IterativeRobot {
     
     public void armControl() {
     	
-    	if (xboxController.getRawButton(ARM_UP)) {
-    		
-    		right_arm.set(1.0);
-    		left_arm.set(1.0);
+    	
+    	if (xboxController.getRawButton(ARM_UP)) {	
+    		RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);
+    		LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
     	}
     	else if (xboxController.getRawButton(ARM_DOWN)) {
     		
-    		right_arm.set(-1.0);
-    		left_arm.set(-1.0);
+    		RIGHT_ARM.set(ARM_SPEED * REVERSE_ARM);
+    		LEFT_ARM.set(-ARM_SPEED * REVERSE_ARM);
     	}
     	else {
     		
-    		right_arm.set(0.0);
-    		left_arm.set(0.0);
+    		RIGHT_ARM.set(0.0);
+    		LEFT_ARM.set(0.0);
     	}
     }
+    
+ /*   public void randomDashboard(){
+    	DRIVE_FACTOR = SmartDashboard.getNumber("Drive Factor");
+    	ROTATE_FACTOR = SmartDashboard.getNumber("Rotate Factor");
+    	ARM_SPEED = SmartDashboard.getNumber("Arm Speed");
+    	REVERSE_ARM = SmartDashboard.getNumber("Reverse Arm");
+    	if(REVERSE_ARM != -1 || REVERSE_ARM != 1){
+    		REVERSE_ARM = 1;
+    	}
+    	SmartDashboard.putNumber("Drive Factor", DRIVE_FACTOR);
+    	SmartDashboard.putNumber("Rotate Factor", ROTATE_FACTOR);
+    	SmartDashboard.putNumber("Arm Speed", ARM_SPEED);
+    	SmartDashboard.putNumber("Reverse Arm", REVERSE_ARM);
+    }*/
 }
+
