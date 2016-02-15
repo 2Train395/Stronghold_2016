@@ -105,17 +105,17 @@ public class Robot extends IterativeRobot {
 	final double ROTATE_PID_GAIN_D = 0.0002;
 	RotatePIDOutput PIDOutput;
 	
-    public void robotInit() {
-    
-	    //DRIVE
-	    robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
-	    robotDrive.setExpiration(0.1); 
+	public void robotInit() {
+	
+		//DRIVE
+		robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
+		robotDrive.setExpiration(0.1); 
 		robotDrive.setSafetyEnabled(true); 
 		robotDrive.setInvertedMotor(MotorType.kFrontRight, true);
 		robotDrive.setInvertedMotor(MotorType.kRearLeft, true);
 		robotDrive.setInvertedMotor(MotorType.kRearRight, true);
 		robotDrive.setInvertedMotor(MotorType.kFrontLeft, true);
-	    
+		
 		// JOYSTICK
 		driveStick = new Joystick(driveStickChannel);
 		xboxController = new Joystick(XBOX_CONTROLLER_CHANNEL);
@@ -353,98 +353,89 @@ public class Robot extends IterativeRobot {
 	    }
     }
 
-    /**
-     * This function is called periodically during operator control
-     */
-    public void teleopPeriodic() {
-    	
+	/**
+	 * This function is called periodically during operator control
+	 */
+	public void teleopPeriodic() {
+		
    // 	randomDashboard();
-    	manualDrive();
-    	rollerControl();
-    	armControl();
-    	
-       	//double range = ultra.getRangeInches();
-       
-    }
-    
-    /**
-     * This function is called periodically during test mode
-     */
-    public void testPeriodic() {
-    
-    }
-    public void manualDrive(){
-    	
-    	double rotateValue = driveStick.getZ();;
-    	
-    	double driveValue = driveStick.getY();	
-    		
-    	robotDrive.arcadeDrive(driveValue , rotateValue * ROTATE_FACTOR);
-
-    	SmartDashboard.putNumber("gyro", gyro.getAngle());
-    	SmartDashboard.putNumber("Inches", ultra.getRangeInches());
-    	
-    //	driveValue *= DRIVE_FACTOR;
-    	rotateValue *= ROTATE_FACTOR;
-    	robotDrive.arcadeDrive(driveValue, rotateValue);
-    	
-    }
-    
-    public void rollerControl(){	
-    	
-    	if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
-    		
-    		roller.set(1.0);
-    	}
-    	else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
-    	
-    		roller.set(-1.0);
-    	}
-    	else{
-			
-    		roller.set(0.0);
-		}
-    	
-    }
-    
-    public void armControl() {
-    	       	
-    	
-    	if (xboxController.getRawButton(ARM_UP) && bottomLimitSwitch.get()) {	
-    		
-    		LEFT_ARM.set(-ARM_SPEED * REVERSE_ARM);
-    		RIGHT_ARM.set(ARM_SPEED * REVERSE_ARM);
-
-    	}
-    	
-    	else if (xboxController.getRawButton(ARM_DOWN) && topLimitSwitch.get()) {
-    		
-    		LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
-    		RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);
-
-    		
-    	}
-    	else{
-
-    		RIGHT_ARM.set(0.0);
-    		LEFT_ARM.set(0.0);
-    		
-    	}
+		manualDrive();
+		rollerControl();
+		armControl();
+		
+		//double range = ultra.getRangeInches();
+	   
+	}
 	
-    }
-    
+	/**
+	 * This function is called periodically during test mode
+	 */
+	public void testPeriodic() {
+	
+	}
+	public void manualDrive(){
+		
+		double rotateValue = driveStick.getZ();;
+		
+		double driveValue = driveStick.getY();	
+			
+		robotDrive.arcadeDrive(driveValue , rotateValue * ROTATE_FACTOR);
+
+		SmartDashboard.putNumber("gyro", gyro.getAngle());
+		SmartDashboard.putNumber("Inches", ultra.getRangeInches());
+		
+	//	driveValue *= DRIVE_FACTOR;
+		rotateValue *= ROTATE_FACTOR;
+		robotDrive.arcadeDrive(driveValue, rotateValue);
+		
+	}
+	
+	public void rollerControl(){	
+		
+		if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
+			
+			roller.set(1.0);
+		}else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
+		
+			roller.set(-1.0);
+		}else{
+
+			roller.set(0.0);
+		}
+		
+	}
+	
+	public void armControl() {
+				
+		
+		if (xboxController.getRawButton(ARM_UP) && bottomLimitSwitch.get()) {	
+			
+			LEFT_ARM.set(-ARM_SPEED * REVERSE_ARM);
+			RIGHT_ARM.set(ARM_SPEED * REVERSE_ARM);
+
+		}else if (xboxController.getRawButton(ARM_DOWN) && topLimitSwitch.get()) {
+			
+			LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
+			RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);
+
+		}else{
+
+			RIGHT_ARM.set(0.0);
+			LEFT_ARM.set(0.0);
+		}
+	}
  /*   public void randomDashboard(){
-    	DRIVE_FACTOR = SmartDashboard.getNumber("Drive Factor");
-    	ROTATE_FACTOR = SmartDashboard.getNumber("Rotate Factor");
-    	ARM_SPEED = SmartDashboard.getNumber("Arm Speed");
-    	REVERSE_ARM = SmartDashboard.getNumber("Reverse Arm");
-    	if(REVERSE_ARM != -1 || REVERSE_ARM != 1){
-    		REVERSE_ARM = 1;
-    	}
-    	SmartDashboard.putNumber("Drive Factor", DRIVE_FACTOR);
-    	SmartDashboard.putNumber("Rotate Factor", ROTATE_FACTOR);
-    	SmartDashboard.putNumber("Arm Speed", ARM_SPEED);
-    	SmartDashboard.putNumber("Reverse Arm", REVERSE_ARM);
-    }*/
+		DRIVE_FACTOR = SmartDashboard.getNumber("Drive Factor");
+		ROTATE_FACTOR = SmartDashboard.getNumber("Rotate Factor");
+		ARM_SPEED = SmartDashboard.getNumber("Arm Speed");
+		REVERSE_ARM = SmartDashboard.getNumber("Reverse Arm");
+		if(REVERSE_ARM != -1 || REVERSE_ARM != 1){
+			REVERSE_ARM = 1;
+		}
+		SmartDashboard.putNumber("Drive Factor", DRIVE_FACTOR);
+		SmartDashboard.putNumber("Rotate Factor", ROTATE_FACTOR);
+		SmartDashboard.putNumber("Arm Speed", ARM_SPEED);
+		SmartDashboard.putNumber("Reverse Arm", REVERSE_ARM);
+	}*/
 }
 
