@@ -28,6 +28,8 @@ import edu.wpi.first.wpilibj.PIDController;
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
+
+// 2/15/16: Fixed formatting and added comments.
 public class Robot extends IterativeRobot {
    
 	// DRIVE
@@ -156,6 +158,10 @@ public class Robot extends IterativeRobot {
 	}
 	
 	public void autonomousPeriodic() {
+
+		//TODO: Comment the autonomous functions.
+		//I should be able to read the code and know EXACTLY what the robot is doing for each movement.
+		//Right now, I have no idea what this is doing.
 		
 		if (AUTON_MODE == 1){
 			if(autonStage==1){
@@ -167,7 +173,7 @@ public class Robot extends IterativeRobot {
 				
 				while(autonTimer.get() < MOVE_TIME){	
 					double angle = gyro.getAngle();
-					autonMove = 0.5;
+					autonMove = 0.5;			//MAGIC NUMBER, use constants
 					//autonRotate = 0.0;
 					robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
 				}
@@ -198,7 +204,7 @@ public class Robot extends IterativeRobot {
 				while(autonTimer.get() < MOVE_TIME){	
 					
 					double angle = gyro.getAngle();
-					autonMove = -0.9;
+					autonMove = -0.9;			//MAGIC NUMBER, use constants
 					//autonRotate = 0.0;
 					robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
 				}
@@ -245,7 +251,6 @@ public class Robot extends IterativeRobot {
 				autonTimer.start();
 				
 				while(autonTimer.get() < RELEASE_TIME){	
-					
 					robotDrive.arcadeDrive(0.0 , 0.0);
 					roller.set(ROLLER_SPEED);
 				}
@@ -264,7 +269,6 @@ public class Robot extends IterativeRobot {
 					SmartDashboard.putNumber("gyro", gyro.getAngle());	    		
 					roller.set(0.0);
 					gyroPID.setSetpoint(-90);
-					
 					gyroPID.enable();
 					//double angle = gyro.getAngle();
 					//autonMove = 0.5;
@@ -276,27 +280,22 @@ public class Robot extends IterativeRobot {
 				autonStage = 4;
 				
 			}else if(autonStage == 4){
-				
 				autonTimer.reset();
 				autonTimer.start();
 				
 				robotDrive.arcadeDrive(0.0 , 0.0);
 				
 				autonTimer.stop();
-				
 			}
 		}
 		
 		if (AUTON_MODE == 3){
-
-			if(autonStage==1){
-					
+			if(autonStage==1){					
 				autonTimer.reset();
 				autonTimer.start();
 				
-				while(autonTimer.get() < MOVE_TIME){	
-					
-					autonMove = -0.70;
+				while(autonTimer.get() < MOVE_TIME){
+					autonMove = -0.70;		//MAGIC NUMBER, use constants
 					autonRotate = 0.0;
 					robotDrive.arcadeDrive(autonMove, autonRotate);
 				}
@@ -304,42 +303,36 @@ public class Robot extends IterativeRobot {
 				autonStage = 2;
 				autonTimer.stop();
 			}else if(autonStage == 2){
-					
 				autonTimer.reset();
 				autonTimer.start();
 				
 				while(autonTimer.get() < RELEASE_TIME){	
-					
 					robotDrive.arcadeDrive(0.0 , 0.0);
 					roller.set(ROLLER_SPEED);
 				}
 				
 				autonStage = 3;
 				autonTimer.stop();
-			}else if(autonStage == 3){
-					
+			}else if(autonStage == 3){	
 				autonTimer.reset();
 				autonTimer.start();
 				
 				while(autonTimer.get() < MOVE_TIME){	
 					roller.set(0.0);
-					autonMove = 0.70;
+					autonMove = 0.70;		//MAGIC NUMBER, use constants
 					autonRotate = 0.0;
 					robotDrive.arcadeDrive(autonMove, autonRotate);
 				}
 				
 				autonStage = 4;
 				autonTimer.stop();
-				
 			}else if(autonStage == 4){
-				
 				autonTimer.reset();
 				autonTimer.start();
 				
 				robotDrive.arcadeDrive(0.0 , 0.0);
 				
 				autonTimer.stop();
-				
 			}
 		}
 	}
@@ -348,14 +341,11 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
-		
    // 	randomDashboard();
 		manualDrive();
 		rollerControl();
 		armControl();
-		
 		//double range = ultra.getRangeInches();
-	   
 	}
 	
 	/**
@@ -364,7 +354,10 @@ public class Robot extends IterativeRobot {
 	public void testPeriodic() {
 	
 	}
+
 	public void manualDrive(){
+
+		//CONSIDER: logarithmic scale for more precise controls.
 		
 		double rotateValue = driveStick.getZ();;
 		
@@ -382,38 +375,57 @@ public class Robot extends IterativeRobot {
 	}
 	
 	public void rollerControl(){	
-		
+
+		//DOCUMENT: logic.
 		if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
-			
 			roller.set(1.0);
 		}else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
-		
 			roller.set(-1.0);
 		}else{
-
 			roller.set(0.0);
 		}
 		
 	}
 	
 	public void armControl() {
-				
+		//DOCUMENT: logic.
 		
 		if (xboxController.getRawButton(ARM_UP) && bottomLimitSwitch.get()) {	
-			
 			LEFT_ARM.set(-ARM_SPEED * REVERSE_ARM);
 			RIGHT_ARM.set(ARM_SPEED * REVERSE_ARM);
-
 		}else if (xboxController.getRawButton(ARM_DOWN) && topLimitSwitch.get()) {
-			
 			LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
 			RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);
-
 		}else{
-
 			RIGHT_ARM.set(0.0);
 			LEFT_ARM.set(0.0);
 		}
+	}
+
+	public void macroControl(){
+		/*
+		README
+			Teleop doesn't mean that everything has to be driver controlled.
+			For driving over one of the ramps, the process is so precise that
+			at the competition, driver mistakes are likely. Macros can prevent
+			such mistakes.
+
+			For example,
+				Drive up to the ramp such that the wheel is touching the ramp.
+				Press a button.
+				The robot automatically:
+					brings down the arm
+					drives forward
+					brings up the arm
+					drives over the ramp
+					stops
+				Driver intervention at any point in the macro ends the macro and
+				switches back to manual control.
+
+			This can be implemented using threads - do you know how to do multithreading?
+
+			-Jake
+		*/
 	}
  /*   public void randomDashboard(){
 		DRIVE_FACTOR = SmartDashboard.getNumber("Drive Factor");
