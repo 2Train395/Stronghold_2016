@@ -76,16 +76,17 @@ public class Robot extends IterativeRobot {
 	int autonStage = 1;
 	Timer autonTimer;
 	final double STOP_TIME = 1.00;
-	final double MOVE_TIME = 1.00;				// TEST BEFORE USING!!!
-	final double RELEASE_TIME = 1.0;
-	final int AUTON_MODE = 2;
+	final double MOVE_TIME = 5.00;				// TEST BEFORE USING!!!
+	final double RELEASE_TIME = 3.00;
+	final int AUTON_MODE = 3;
+	boolean sequenceComplete;
 		 
 	//ANALOG 
 	AnalogGyro gyro;
 	final int GYRO_CHANNEL =  0;
 	final double GYRO_SENSITIVITY = 0.007;
 	final int TEMP_CHANNEL = 1;
-	final double GYRO_CORRECTION = 0.03;
+	final double GYRO_CORRECTION = 0.05;
 	
 	//DIGITAL
 	DigitalInput topLimitSwitch;
@@ -147,6 +148,11 @@ public class Robot extends IterativeRobot {
 		PIDOutput = new RotatePIDOutput(robotDrive);
 		gyroPID = new PIDController(ROTATE_PID_GAIN_P, ROTATE_PID_GAIN_I, ROTATE_PID_GAIN_D, gyro ,PIDOutput);
 		gyroPID.disable();
+		
+		//AUTON
+		autonTimer = new Timer();
+		sequenceComplete = false;
+
     }
     
     public void autonomousPeriodic() {
@@ -194,7 +200,7 @@ public class Robot extends IterativeRobot {
 		   			double angle = gyro.getAngle();
 		   			autonMove = -0.9;
 		    		//autonRotate = 0.0;
-		    		robotDrive.arcadeDrive(autonMove, angle * GYRO_CORRECTION);
+		    		robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
 		    	}
 		    	
 		    	autonStage = 4;
@@ -220,17 +226,21 @@ public class Robot extends IterativeRobot {
 	        	
 	   		autonTimer.reset();
 	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    		
-	   			autonMove = 0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	    	}
+		    gyro.reset();
+		    	
+		   		while(autonTimer.get() < MOVE_TIME){
+		   			SmartDashboard.putNumber("gyro", gyro.getAngle());		   			
+		    		double angle = gyro.getAngle();
+		   			autonMove = 1.0;
+		    		//autonRotate = 0.0;
+		    		robotDrive.arcadeDrive(-autonMove, -angle * GYRO_CORRECTION);
+		    	}
     	
+	   		autonTimer.stop();
 	   		autonStage = 2;
-	    	autonTimer.stop();
-	   	}
+	   	
+	   		}
+	   		
 	    else if(autonStage == 2){
 	    		
 	   		autonTimer.reset();
@@ -239,11 +249,11 @@ public class Robot extends IterativeRobot {
     		while(autonTimer.get() < RELEASE_TIME){	
 	    		
     			robotDrive.arcadeDrive(0.0 , 0.0);
-	    		roller.set(-ROLLER_SPEED);
+	    		roller.set(ROLLER_SPEED);
 	    	}
-	   		
-    		autonStage = 3;
-	   		autonTimer.stop();
+	   	
+    		autonTimer.stop();
+    		autonStage = 3;  
 	    }
 	    else if(autonStage == 3){
 	    		
@@ -253,17 +263,20 @@ public class Robot extends IterativeRobot {
 	    	gyro.reset();
 	    	gyroPID.disable();
 	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	   			gyroPID.setSetpoint(90);
+	   		while(autonTimer.get() < 15){
+	   			SmartDashboard.putNumber("gyro", gyro.getAngle());	    		
+	   			roller.set(0.0);
+	   			gyroPID.setSetpoint(-90);
+	   			
 	   			gyroPID.enable();
 	   			//double angle = gyro.getAngle();
-	   		//	autonMove = 0.5;
+	   		    //autonMove = 0.5;
 	    		//autonRotate = 0.0;
 	    		//robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
 	    	}
-	    		    	
+	    	
+	   		autonTimer.stop();	    	
 	    	autonStage = 4;
-	    	autonTimer.stop();
 	    	
 	   	}
 	   	
@@ -288,7 +301,7 @@ public class Robot extends IterativeRobot {
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
 	    		
-	   			autonMove = 0.9;
+	   			autonMove = -0.70;
 	    		autonRotate = 0.0;
 	    		robotDrive.arcadeDrive(autonMove, autonRotate);
 	    	}
@@ -304,7 +317,7 @@ public class Robot extends IterativeRobot {
     		while(autonTimer.get() < RELEASE_TIME){	
 	    		
     			robotDrive.arcadeDrive(0.0 , 0.0);
-	    		roller.set(-ROLLER_SPEED);
+	    		roller.set(ROLLER_SPEED);
 	    	}
 	   		
     		autonStage = 3;
@@ -316,8 +329,8 @@ public class Robot extends IterativeRobot {
 	   		autonTimer.start();
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
-	    	
-	   			autonMove = -0.9;
+	   			roller.set(0.0);
+	   			autonMove = 0.70;
 	    		autonRotate = 0.0;
 	    		robotDrive.arcadeDrive(autonMove, autonRotate);
 	    	}
@@ -338,75 +351,7 @@ public class Robot extends IterativeRobot {
 	    	
 	    	}
 	    }
-
-	    if (AUTON_MODE == 3){
-	    	
-	    	if(autonStage==1){
-	        	
-	   		autonTimer.reset();
-	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    		
-	   			autonMove = 0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-
-	   			autonMove = 0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-
-	    	}
-	    	
-	   		autonStage = 2;
-	    	autonTimer.stop();
-	   	}
-	    else if(autonStage == 2){
-	    		
-	   		autonTimer.reset();
-    		autonTimer.start();
-	    	
-    		while(autonTimer.get() < RELEASE_TIME){	
-	    		
-    			robotDrive.arcadeDrive(0.0 , 0.0);
-	    		roller.set(-ROLLER_SPEED);
-	    	}
-	   		
-    		autonStage = 3;
-	   		autonTimer.stop();
-	    }
-	    else if(autonStage == 3){
-	    		
-	    	autonTimer.reset();
-	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    	
-	   			autonMove = -0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	   			autonMove = -0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	    	}
-	    	
-	    	autonStage = 4;
-	    	autonTimer.stop();
-	    	
-	   	}
-	   	
-	    else if(autonStage == 4){
-	    	
-	    	autonTimer.reset();
-	    	autonTimer.start();
-	    	
-	    		robotDrive.arcadeDrive(0.0 , 0.0);
-	    	
-	    	autonTimer.stop();
-	    	
-	    	}
-	    }
-	}
+    }
 
     /**
      * This function is called periodically during operator control
