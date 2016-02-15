@@ -104,17 +104,17 @@ public class Robot extends IterativeRobot {
 	final double ROTATE_PID_GAIN_D = 0.0002;
 	RotatePIDOutput PIDOutput;
 	
-    public void robotInit() {
-    
-	    //DRIVE
-	    robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
-	    robotDrive.setExpiration(0.1); 
+	public void robotInit() {
+	
+		//DRIVE
+		robotDrive = new RobotDrive(frontLeftChannel, rearLeftChannel, frontRightChannel, rearRightChannel);
+		robotDrive.setExpiration(0.1); 
 		robotDrive.setSafetyEnabled(true); 
 		robotDrive.setInvertedMotor(MotorType.kFrontRight, true);
 		robotDrive.setInvertedMotor(MotorType.kRearLeft, true);
 		robotDrive.setInvertedMotor(MotorType.kRearRight, true);
 		robotDrive.setInvertedMotor(MotorType.kFrontLeft, true);
-	    
+		
 		// JOYSTICK
 		driveStick = new Joystick(driveStickChannel);
 		xboxController = new Joystick(XBOX_CONTROLLER_CHANNEL);
@@ -147,359 +147,326 @@ public class Robot extends IterativeRobot {
 		PIDOutput = new RotatePIDOutput(robotDrive);
 		gyroPID = new PIDController(ROTATE_PID_GAIN_P, ROTATE_PID_GAIN_I, ROTATE_PID_GAIN_D, gyro ,PIDOutput);
 		gyroPID.disable();
-    }
-    
-    public void autonomousPeriodic() {
-        
-	    if (AUTON_MODE == 1){
-	    	if(autonStage==1){
-	        	
-		   		autonTimer.reset();
-		   		autonTimer.start();
+	}
 	
-		    	gyro.reset();
-		    	
-		   		while(autonTimer.get() < MOVE_TIME){	
-		    		double angle = gyro.getAngle();
-		   			autonMove = 0.5;
-		    		//autonRotate = 0.0;
-		    		robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
-		    	}
-		    	
-		   		autonStage = 2;
-		    	autonTimer.stop();
-	    	}
-		    else if(autonStage == 2){
-		    		
-		   		autonTimer.reset();
-	    		autonTimer.start();
-		    	
-	    		while(autonTimer.get() < RELEASE_TIME){	
-		    		
-	    			robotDrive.arcadeDrive(0.0 , 0.0);
-		    		roller.set(-ROLLER_SPEED);
-		    	}
-		   		
-	    		autonStage = 3;
-		   		autonTimer.stop();
-		    }
-		    else if(autonStage == 3){
-		    	
-		    	autonTimer.reset();
-		   		autonTimer.start();
-		   		gyro.reset();
-		   		
-		   		while(autonTimer.get() < MOVE_TIME){	
-		   			
-		   			double angle = gyro.getAngle();
-		   			autonMove = -0.9;
-		    		//autonRotate = 0.0;
-		    		robotDrive.arcadeDrive(autonMove, angle * GYRO_CORRECTION);
-		    	}
-		    	
-		    	autonStage = 4;
-		    	autonTimer.stop();
-		    	
-		   	}
-		   	
-		    else if(autonStage == 4){
-		    	
-		    	autonTimer.reset();
-		    	autonTimer.start();
-		    	
-		    		robotDrive.arcadeDrive(0.0 , 0.0);
-		    	
-		    	autonTimer.stop();
-		    	
-		    	}
-		    }
-	    
-	    if (AUTON_MODE == 2){
+	public void autonomousPeriodic() {
 
-	    	if(autonStage==1){
-	        	
-	   		autonTimer.reset();
-	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    		
-	   			autonMove = 0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	    	}
-    	
-	   		autonStage = 2;
-	    	autonTimer.stop();
-	   	}
-	    else if(autonStage == 2){
-	    		
-	   		autonTimer.reset();
-    		autonTimer.start();
-	    	
-    		while(autonTimer.get() < RELEASE_TIME){	
-	    		
-    			robotDrive.arcadeDrive(0.0 , 0.0);
-	    		roller.set(-ROLLER_SPEED);
-	    	}
-	   		
-    		autonStage = 3;
-	   		autonTimer.stop();
-	    }
-	    else if(autonStage == 3){
-	    		
-	   		autonTimer.reset();
-	   		autonTimer.start();
+		//TODO: Please thoroughly comment the autonomous code.
+		
+		if (AUTON_MODE == 1){
+			if(autonStage==1){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				gyro.reset();
+				
+				while(autonTimer.get() < MOVE_TIME){	
+					double angle = gyro.getAngle();
+					autonMove = 0.5;
+					//autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
+				}
+				
+				autonStage = 2;
+				autonTimer.stop();
+			}
+			else if(autonStage == 2){
+					
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < RELEASE_TIME){
+					robotDrive.arcadeDrive(0.0 , 0.0);
+					roller.set(-ROLLER_SPEED);
+				}
+				
+				autonStage = 3;
+				autonTimer.stop();
+			}
+			else if(autonStage == 3){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				gyro.reset();
+				
+				while(autonTimer.get() < MOVE_TIME){	
+					
+					double angle = gyro.getAngle();
+					autonMove = -0.9;					//MAGIC NUMBER, replace with constant
+					//autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, angle * GYRO_CORRECTION);
+				}
+				
+				autonStage = 4;
+				autonTimer.stop();
+				
+			}
+			
+			else if(autonStage == 4){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				
+				robotDrive.arcadeDrive(0.0 , 0.0);
 
-	    	gyro.reset();
-	    	gyroPID.disable();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	   			gyroPID.setSetpoint(90);
-	   			gyroPID.enable();
-	   			//double angle = gyro.getAngle();
-	   		//	autonMove = 0.5;
-	    		//autonRotate = 0.0;
-	    		//robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
-	    	}
-	    		    	
-	    	autonStage = 4;
-	    	autonTimer.stop();
-	    	
-	   	}
-	   	
-	    else if(autonStage == 4){
-	    	
-	    	autonTimer.reset();
-	    	autonTimer.start();
-	    	
-	    		robotDrive.arcadeDrive(0.0 , 0.0);
-	    	
-	    	autonTimer.stop();
-	    	
-	    	}
-	    }
-	    
-	    if (AUTON_MODE == 3){
+				autonTimer.stop();
+				
+			}
+		}
+		if (AUTON_MODE == 2){
 
-	    	if(autonStage==1){
-	        	
-	   		autonTimer.reset();
-	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    		
-	   			autonMove = 0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	    	}
-	    	
-	   		autonStage = 2;
-	    	autonTimer.stop();
-	   	}
-	    else if(autonStage == 2){
-	    		
-	   		autonTimer.reset();
-    		autonTimer.start();
-	    	
-    		while(autonTimer.get() < RELEASE_TIME){	
-	    		
-    			robotDrive.arcadeDrive(0.0 , 0.0);
-	    		roller.set(-ROLLER_SPEED);
-	    	}
-	   		
-    		autonStage = 3;
-	   		autonTimer.stop();
-	    }
-	    else if(autonStage == 3){
-	    		
-	    	autonTimer.reset();
-	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    	
-	   			autonMove = -0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	    	}
-	    	
-	    	autonStage = 4;
-	    	autonTimer.stop();
-	    	
-	   	}
-	   	
-	    else if(autonStage == 4){
-	    	
-	    	autonTimer.reset();
-	    	autonTimer.start();
-	    	
-	    		robotDrive.arcadeDrive(0.0 , 0.0);
-	    	
-	    	autonTimer.stop();
-	    	
-	    	}
-	    }
+			if(autonStage==1){
+				
+				autonTimer.reset();
+				autonTimer.start();
+			
+				while(autonTimer.get() < MOVE_TIME){	
+				
+					autonMove = 0.9;
+					autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, autonRotate);
+				}
+		
+				autonStage = 2;
+				autonTimer.stop();
+			}else if(autonStage == 2){
+					
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < RELEASE_TIME){	
+					
+					robotDrive.arcadeDrive(0.0 , 0.0);
+					roller.set(-ROLLER_SPEED);
+				}
+				
+				autonStage = 3;
+				autonTimer.stop();
+			}else if(autonStage == 3){
+					
+				autonTimer.reset();
+				autonTimer.start();
 
-	    if (AUTON_MODE == 3){
-	    	
-	    	if(autonStage==1){
-	        	
-	   		autonTimer.reset();
-	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    		
-	   			autonMove = 0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
+				gyro.reset();
+				gyroPID.disable();
+				
+				while(autonTimer.get() < MOVE_TIME){	
+					gyroPID.setSetpoint(90);
+					gyroPID.enable();
+					//double angle = gyro.getAngle();
+				//	autonMove = 0.5;
+					//autonRotate = 0.0;
+					//robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
+				}
+							
+				autonStage = 4;
+				autonTimer.stop();
+				
+			}else if(autonStage == 4){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				
+				robotDrive.arcadeDrive(0.0 , 0.0);
+				
+				autonTimer.stop();
+			}
+		}
+		
+		if (AUTON_MODE == 3){
+			if(autonStage == 1){
+				autonTimer.reset();
+				autonTimer.start();
+			
+				while(autonTimer.get() < MOVE_TIME){	
+					autonMove = 0.9;			//MAGIC NUMBER, replace with constant
+					autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, autonRotate);
+				}
+			
+				autonStage = 2;
+				autonTimer.stop();
+			}else if(autonStage == 2){
+				
+				autonTimer.reset();
+				autonTimer.start();
+			
+				while(autonTimer.get() < RELEASE_TIME){	
+					robotDrive.arcadeDrive(0.0 , 0.0);
+					roller.set(-ROLLER_SPEED);
+				}
+			
+				autonStage = 3;
+				autonTimer.stop();
+			}else if(autonStage == 3){
+				
+				autonTimer.reset();
+				autonTimer.start();
+			
+				while(autonTimer.get() < MOVE_TIME){	
+					autonMove = -0.9;
+					autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, autonRotate);
+				}
+				autonStage = 4;
+				autonTimer.stop();
+			}else if(autonStage == 4){
+			
+				autonTimer.reset();
+				autonTimer.start();
 
-	   			autonMove = 0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
+				robotDrive.arcadeDrive(0.0 , 0.0);
+			
+				autonTimer.stop();
+			
+			}
+		}
 
-	    	}
-	    	
-	   		autonStage = 2;
-	    	autonTimer.stop();
-	   	}
-	    else if(autonStage == 2){
-	    		
-	   		autonTimer.reset();
-    		autonTimer.start();
-	    	
-    		while(autonTimer.get() < RELEASE_TIME){	
-	    		
-    			robotDrive.arcadeDrive(0.0 , 0.0);
-	    		roller.set(-ROLLER_SPEED);
-	    	}
-	   		
-    		autonStage = 3;
-	   		autonTimer.stop();
-	    }
-	    else if(autonStage == 3){
-	    		
-	    	autonTimer.reset();
-	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    	
-	   			autonMove = -0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	   			autonMove = -0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	    	}
-	    	
-	    	autonStage = 4;
-	    	autonTimer.stop();
-	    	
-	   	}
-	   	
-	    else if(autonStage == 4){
-	    	
-	    	autonTimer.reset();
-	    	autonTimer.start();
-	    	
-	    		robotDrive.arcadeDrive(0.0 , 0.0);
-	    	
-	    	autonTimer.stop();
-	    	
-	    	}
-	    }
+		if (AUTON_MODE == 3){
+			
+			if(autonStage==1){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < MOVE_TIME){	
+					
+					autonMove = 0.9;
+					autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, autonRotate);
+
+					autonMove = 0.9;
+					autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, autonRotate);
+
+				}
+				
+				autonStage = 2;
+				autonTimer.stop();
+			}else if(autonStage == 2){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < RELEASE_TIME){	
+					robotDrive.arcadeDrive(0.0 , 0.0);
+					roller.set(-ROLLER_SPEED);
+				}
+				
+				autonStage = 3;
+				autonTimer.stop();
+			}else if(autonStage == 3){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < MOVE_TIME){	
+				
+					autonMove = -0.9;	//MAGIC NUMBER
+					autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, autonRotate);
+					autonMove = -0.9;	//MAGIC NUMBER
+					autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, autonRotate);
+				}
+				
+				autonStage = 4;
+				autonTimer.stop();
+			}else if(autonStage == 4){
+			
+				autonTimer.reset();
+				autonTimer.start();
+				
+				robotDrive.arcadeDrive(0.0 , 0.0);
+				
+				autonTimer.stop();
+			}
+		}
 	}
 
-    /**
-     * This function is called periodically during operator control
-     */
-    public void teleopPeriodic() {
-    	
+	/**
+	 * This function is called periodically during operator control
+	 */
+	public void teleopPeriodic() {
+		
    // 	randomDashboard();
-    	manualDrive();
-    	rollerControl();
-    	armControl();
-    	
-       	//double range = ultra.getRangeInches();
-       
-    }
-    
-    /**
-     * This function is called periodically during test mode
-     */
-    public void testPeriodic() {
-    
-    }
-    public void manualDrive(){
-    	
-    	double rotateValue = driveStick.getZ();;
-    	
-    	double driveValue = driveStick.getY();	
-    		
-    	robotDrive.arcadeDrive(driveValue , rotateValue * ROTATE_FACTOR);
-
-    	SmartDashboard.putNumber("gyro", gyro.getAngle());
-    	SmartDashboard.putNumber("Inches", ultra.getRangeInches());
-    	
-    //	driveValue *= DRIVE_FACTOR;
-    	rotateValue *= ROTATE_FACTOR;
-    	robotDrive.arcadeDrive(driveValue, rotateValue);
-    	
-    }
-    
-    public void rollerControl(){	
-    	
-    	if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
-    		
-    		roller.set(1.0);
-    	}
-    	else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
-    	
-    		roller.set(-1.0);
-    	}
-    	else{
-			
-    		roller.set(0.0);
-		}
-    	
-    }
-    
-    public void armControl() {
-    	       	
-    	
-    	if (xboxController.getRawButton(ARM_UP) && bottomLimitSwitch.get()) {	
-    		
-    		LEFT_ARM.set(-ARM_SPEED * REVERSE_ARM);
-    		RIGHT_ARM.set(ARM_SPEED * REVERSE_ARM);
-
-    	}
-    	
-    	else if (xboxController.getRawButton(ARM_DOWN) && topLimitSwitch.get()) {
-    		
-    		LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
-    		RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);
-
-    		
-    	}
-    	else{
-
-    		RIGHT_ARM.set(0.0);
-    		LEFT_ARM.set(0.0);
-    		
-    	}
+		manualDrive();
+		rollerControl();
+		armControl();
+		
+		//double range = ultra.getRangeInches();
+	   
+	}
 	
-    }
-    
+	/**
+	 * This function is called periodically during test mode
+	 */
+	public void testPeriodic() {
+	
+	}
+	public void manualDrive(){
+		
+		double rotateValue = driveStick.getZ();;
+		
+		double driveValue = driveStick.getY();	
+			
+		robotDrive.arcadeDrive(driveValue , rotateValue * ROTATE_FACTOR);
+
+		SmartDashboard.putNumber("gyro", gyro.getAngle());
+		SmartDashboard.putNumber("Inches", ultra.getRangeInches());
+		
+	//	driveValue *= DRIVE_FACTOR;
+		rotateValue *= ROTATE_FACTOR;
+		robotDrive.arcadeDrive(driveValue, rotateValue);
+		
+	}
+	
+	public void rollerControl(){	
+		
+		if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
+			
+			roller.set(1.0);
+		}else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
+		
+			roller.set(-1.0);
+		}else{
+
+			roller.set(0.0);
+		}
+		
+	}
+	
+	public void armControl() {
+				
+		
+		if (xboxController.getRawButton(ARM_UP) && bottomLimitSwitch.get()) {	
+			
+			LEFT_ARM.set(-ARM_SPEED * REVERSE_ARM);
+			RIGHT_ARM.set(ARM_SPEED * REVERSE_ARM);
+
+		}else if (xboxController.getRawButton(ARM_DOWN) && topLimitSwitch.get()) {
+			
+			LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
+			RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);
+
+		}else{
+
+			RIGHT_ARM.set(0.0);
+			LEFT_ARM.set(0.0);
+		}
+	}
  /*   public void randomDashboard(){
-    	DRIVE_FACTOR = SmartDashboard.getNumber("Drive Factor");
-    	ROTATE_FACTOR = SmartDashboard.getNumber("Rotate Factor");
-    	ARM_SPEED = SmartDashboard.getNumber("Arm Speed");
-    	REVERSE_ARM = SmartDashboard.getNumber("Reverse Arm");
-    	if(REVERSE_ARM != -1 || REVERSE_ARM != 1){
-    		REVERSE_ARM = 1;
-    	}
-    	SmartDashboard.putNumber("Drive Factor", DRIVE_FACTOR);
-    	SmartDashboard.putNumber("Rotate Factor", ROTATE_FACTOR);
-    	SmartDashboard.putNumber("Arm Speed", ARM_SPEED);
-    	SmartDashboard.putNumber("Reverse Arm", REVERSE_ARM);
-    }*/
+		DRIVE_FACTOR = SmartDashboard.getNumber("Drive Factor");
+		ROTATE_FACTOR = SmartDashboard.getNumber("Rotate Factor");
+		ARM_SPEED = SmartDashboard.getNumber("Arm Speed");
+		REVERSE_ARM = SmartDashboard.getNumber("Reverse Arm");
+		if(REVERSE_ARM != -1 || REVERSE_ARM != 1){
+			REVERSE_ARM = 1;
+		}
+		SmartDashboard.putNumber("Drive Factor", DRIVE_FACTOR);
+		SmartDashboard.putNumber("Rotate Factor", ROTATE_FACTOR);
+		SmartDashboard.putNumber("Arm Speed", ARM_SPEED);
+		SmartDashboard.putNumber("Reverse Arm", REVERSE_ARM);
+	}*/
 }
 
