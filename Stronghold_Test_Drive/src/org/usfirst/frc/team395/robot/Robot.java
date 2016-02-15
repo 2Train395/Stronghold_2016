@@ -153,205 +153,196 @@ public class Robot extends IterativeRobot {
 		autonTimer = new Timer();
 		sequenceComplete = false;
 
-    }
-    
-    public void autonomousPeriodic() {
-        
-	    if (AUTON_MODE == 1){
-	    	if(autonStage==1){
-	        	
-		   		autonTimer.reset();
-		   		autonTimer.start();
+	}
 	
-		    	gyro.reset();
-		    	
-		   		while(autonTimer.get() < MOVE_TIME){	
-		    		double angle = gyro.getAngle();
-		   			autonMove = 0.5;
-		    		//autonRotate = 0.0;
-		    		robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
-		    	}
-		    	
-		   		autonStage = 2;
-		    	autonTimer.stop();
-	    	}
-		    else if(autonStage == 2){
-		    		
-		   		autonTimer.reset();
-	    		autonTimer.start();
-		    	
-	    		while(autonTimer.get() < RELEASE_TIME){	
-		    		
-	    			robotDrive.arcadeDrive(0.0 , 0.0);
-		    		roller.set(-ROLLER_SPEED);
-		    	}
-		   		
-	    		autonStage = 3;
-		   		autonTimer.stop();
-		    }
-		    else if(autonStage == 3){
-		    	
-		    	autonTimer.reset();
-		   		autonTimer.start();
-		   		gyro.reset();
-		   		
-		   		while(autonTimer.get() < MOVE_TIME){	
-		   			
-		   			double angle = gyro.getAngle();
-		   			autonMove = -0.9;
-		    		//autonRotate = 0.0;
-		    		robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
-		    	}
-		    	
-		    	autonStage = 4;
-		    	autonTimer.stop();
-		    	
-		   	}
-		   	
-		    else if(autonStage == 4){
-		    	
-		    	autonTimer.reset();
-		    	autonTimer.start();
-		    	
-		    		robotDrive.arcadeDrive(0.0 , 0.0);
-		    	
-		    	autonTimer.stop();
-		    	
-		    	}
-		    }
-	    
-	    if (AUTON_MODE == 2){
+	public void autonomousPeriodic() {
+		
+		if (AUTON_MODE == 1){
+			if(autonStage==1){
+				
+				autonTimer.reset();
+				autonTimer.start();
+	
+				gyro.reset();
+				
+				while(autonTimer.get() < MOVE_TIME){	
+					double angle = gyro.getAngle();
+					autonMove = 0.5;
+					//autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
+				}
+				
+				autonStage = 2;
+				autonTimer.stop();
+			}
+			else if(autonStage == 2){
+					
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < RELEASE_TIME){	
+					
+					robotDrive.arcadeDrive(0.0 , 0.0);
+					roller.set(-ROLLER_SPEED);
+				}
+				
+				autonStage = 3;
+				autonTimer.stop();
+			}
+			else if(autonStage == 3){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				gyro.reset();
+				
+				while(autonTimer.get() < MOVE_TIME){	
+					
+					double angle = gyro.getAngle();
+					autonMove = -0.9;
+					//autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
+				}
+				
+				autonStage = 4;
+				autonTimer.stop();
+				
+			}
+			
+			else if(autonStage == 4){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				
+					robotDrive.arcadeDrive(0.0 , 0.0);
+				
+				autonTimer.stop();
+				
+				}
+			}
+		
+		if (AUTON_MODE == 2){
 
-	    	if(autonStage==1){
-	        	
-	   		autonTimer.reset();
-	   		autonTimer.start();
-		    gyro.reset();
-		    	
-		   		while(autonTimer.get() < MOVE_TIME){
-		   			SmartDashboard.putNumber("gyro", gyro.getAngle());		   			
-		    		double angle = gyro.getAngle();
-		   			autonMove = 1.0;
-		    		//autonRotate = 0.0;
-		    		robotDrive.arcadeDrive(-autonMove, -angle * GYRO_CORRECTION);
-		    	}
-    	
-	   		autonTimer.stop();
-	   		autonStage = 2;
-	   	
-	   		}
-	   		
-	    else if(autonStage == 2){
-	    		
-	   		autonTimer.reset();
-    		autonTimer.start();
-	    	
-    		while(autonTimer.get() < RELEASE_TIME){	
-	    		
-    			robotDrive.arcadeDrive(0.0 , 0.0);
-	    		roller.set(ROLLER_SPEED);
-	    	}
-	   	
-    		autonTimer.stop();
-    		autonStage = 3;  
-	    }
-	    else if(autonStage == 3){
-	    		
-	   		autonTimer.reset();
-	   		autonTimer.start();
+			if(autonStage==1){
+				
+			autonTimer.reset();
+			autonTimer.start();
+			gyro.reset();
+				
+			while(autonTimer.get() < MOVE_TIME){
+				SmartDashboard.putNumber("gyro", gyro.getAngle());		   			
+				double angle = gyro.getAngle();
+				autonMove = 1.0;
+				//autonRotate = 0.0;
+				robotDrive.arcadeDrive(-autonMove, -angle * GYRO_CORRECTION);
+			}
+		
+			autonTimer.stop();
+			autonStage = 2;
+		
+			}else if(autonStage == 2){
+					
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < RELEASE_TIME){	
+					
+					robotDrive.arcadeDrive(0.0 , 0.0);
+					roller.set(ROLLER_SPEED);
+				}
+			
+				autonTimer.stop();
+				autonStage = 3;  
+			}else if(autonStage == 3){
+					
+				autonTimer.reset();
+				autonTimer.start();
 
-	    	gyro.reset();
-	    	gyroPID.disable();
-	    	
-	   		while(autonTimer.get() < 15){
-	   			SmartDashboard.putNumber("gyro", gyro.getAngle());	    		
-	   			roller.set(0.0);
-	   			gyroPID.setSetpoint(-90);
-	   			
-	   			gyroPID.enable();
-	   			//double angle = gyro.getAngle();
-	   		    //autonMove = 0.5;
-	    		//autonRotate = 0.0;
-	    		//robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
-	    	}
-	    	
-	   		autonTimer.stop();	    	
-	    	autonStage = 4;
-	    	
-	   	}
-	   	
-	    else if(autonStage == 4){
-	    	
-	    	autonTimer.reset();
-	    	autonTimer.start();
-	    	
-	    		robotDrive.arcadeDrive(0.0 , 0.0);
-	    	
-	    	autonTimer.stop();
-	    	
-	    	}
-	    }
-	    
-	    if (AUTON_MODE == 3){
+				gyro.reset();
+				gyroPID.disable();
+				
+				while(autonTimer.get() < 15){
+					SmartDashboard.putNumber("gyro", gyro.getAngle());	    		
+					roller.set(0.0);
+					gyroPID.setSetpoint(-90);
+					
+					gyroPID.enable();
+					//double angle = gyro.getAngle();
+					//autonMove = 0.5;
+					//autonRotate = 0.0;
+					//robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
+				}
+				
+				autonTimer.stop();	    	
+				autonStage = 4;
+				
+			}else if(autonStage == 4){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				
+				robotDrive.arcadeDrive(0.0 , 0.0);
+				
+				autonTimer.stop();
+				
+			}
+		}
+		
+		if (AUTON_MODE == 3){
 
-	    	if(autonStage==1){
-	        	
-	   		autonTimer.reset();
-	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    		
-	   			autonMove = -0.70;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	    	}
-	    	
-	   		autonStage = 2;
-	    	autonTimer.stop();
-	   	}
-	    else if(autonStage == 2){
-	    		
-	   		autonTimer.reset();
-    		autonTimer.start();
-	    	
-    		while(autonTimer.get() < RELEASE_TIME){	
-	    		
-    			robotDrive.arcadeDrive(0.0 , 0.0);
-	    		roller.set(ROLLER_SPEED);
-	    	}
-	   		
-    		autonStage = 3;
-	   		autonTimer.stop();
-	    }
-	    else if(autonStage == 3){
-	    		
-	    	autonTimer.reset();
-	   		autonTimer.start();
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	   			roller.set(0.0);
-	   			autonMove = 0.70;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	    	}
-	    	
-	    	autonStage = 4;
-	    	autonTimer.stop();
-	    	
-	   	}
-	   	
-	    else if(autonStage == 4){
-	    	
-	    	autonTimer.reset();
-	    	autonTimer.start();
-	    	
-	    		robotDrive.arcadeDrive(0.0 , 0.0);
-	    	
-	    	autonTimer.stop();
-	    	
-	    	}
-	    }
-    }
+			if(autonStage==1){
+					
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < MOVE_TIME){	
+					
+					autonMove = -0.70;
+					autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, autonRotate);
+				}
+				
+				autonStage = 2;
+				autonTimer.stop();
+			}else if(autonStage == 2){
+					
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < RELEASE_TIME){	
+					
+					robotDrive.arcadeDrive(0.0 , 0.0);
+					roller.set(ROLLER_SPEED);
+				}
+				
+				autonStage = 3;
+				autonTimer.stop();
+			}else if(autonStage == 3){
+					
+				autonTimer.reset();
+				autonTimer.start();
+				
+				while(autonTimer.get() < MOVE_TIME){	
+					roller.set(0.0);
+					autonMove = 0.70;
+					autonRotate = 0.0;
+					robotDrive.arcadeDrive(autonMove, autonRotate);
+				}
+				
+				autonStage = 4;
+				autonTimer.stop();
+				
+			}else if(autonStage == 4){
+				
+				autonTimer.reset();
+				autonTimer.start();
+				
+				robotDrive.arcadeDrive(0.0 , 0.0);
+				
+				autonTimer.stop();
+				
+			}
+		}
+	}
 
 	/**
 	 * This function is called periodically during operator control
