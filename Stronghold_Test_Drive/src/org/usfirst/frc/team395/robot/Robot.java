@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.PIDController;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -50,8 +52,8 @@ public class Robot extends IterativeRobot {
 	final int ROLLER_OUTXB = 5;
 	final int ROLLER_INJS = 1;
 	final int ROLLER_OUTJS = 2;
-	final int ARM_UP = 4;
-	final int ARM_DOWN = 1;
+	final int ARM_UP = 1;
+	final int ARM_DOWN = 4;
 
 	final int ROLLER_OUT = 5;
 	final int ROLLER_IN = 6;
@@ -76,7 +78,7 @@ public class Robot extends IterativeRobot {
 	final double STOP_TIME = 1.00;
 	final double MOVE_TIME = 1.00;				// TEST BEFORE USING!!!
 	final double RELEASE_TIME = 1.0;
-	final int AUTON_MODE = 1;
+	final int AUTON_MODE = 2;
 		 
 	//ANALOG 
 	AnalogGyro gyro;
@@ -94,6 +96,13 @@ public class Robot extends IterativeRobot {
 	Ultrasonic ultra;
 	final int ULTRASONIC_CHANNEL_IN = 7;
 	final int ULTRASONIC_CHANNEL_OUT = 8;
+	
+	//PID
+	PIDController gyroPID;
+	final double ROTATE_PID_GAIN_P = 0.001; 
+	final double ROTATE_PID_GAIN_I = 0.0000;   // probably don't need I for positional
+	final double ROTATE_PID_GAIN_D = 0.0002;
+	RotatePIDOutput PIDOutput;
 	
     public void robotInit() {
     
@@ -133,6 +142,11 @@ public class Robot extends IterativeRobot {
 		//DASHBOARD
 		SmartDashboard.putNumber("gyro", gyro.getAngle());
 		SmartDashboard.putNumber("Inches", ultra.getRangeInches());
+		
+		//PID
+		PIDOutput = new RotatePIDOutput(robotDrive);
+		gyroPID = new PIDController(ROTATE_PID_GAIN_P, ROTATE_PID_GAIN_I, ROTATE_PID_GAIN_D, gyro ,PIDOutput);
+		gyroPID.disable();
     }
     
     public void autonomousPeriodic() {
@@ -213,16 +227,7 @@ public class Robot extends IterativeRobot {
 	    		autonRotate = 0.0;
 	    		robotDrive.arcadeDrive(autonMove, autonRotate);
 	    	}
-
-	    	
-	   		while(autonTimer.get() < MOVE_TIME){	
-	    		
-	   			autonMove = 0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	    	}
-
-	    	
+    	
 	   		autonStage = 2;
 	    	autonTimer.stop();
 	   	}
@@ -242,19 +247,21 @@ public class Robot extends IterativeRobot {
 	    }
 	    else if(autonStage == 3){
 	    		
-	    	autonTimer.reset();
+	   		autonTimer.reset();
 	   		autonTimer.start();
+
+	    	gyro.reset();
+	    	gyroPID.disable();
 	    	
 	   		while(autonTimer.get() < MOVE_TIME){	
-	    	
-	   			autonMove = -0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
-	   			autonMove = -0.9;
-	    		autonRotate = 0.0;
-	    		robotDrive.arcadeDrive(autonMove, autonRotate);
+	   			gyroPID.setSetpoint(90);
+	   			gyroPID.enable();
+	   			//double angle = gyro.getAngle();
+	   		//	autonMove = 0.5;
+	    		//autonRotate = 0.0;
+	    		//robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
 	    	}
-	    	
+	    		    	
 	    	autonStage = 4;
 	    	autonTimer.stop();
 	    	
