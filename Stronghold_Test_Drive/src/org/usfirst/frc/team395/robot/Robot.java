@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj.PIDController;
  * directory.
  */
 
-// 2/15/16: Fixed formatting and added comments.
 public class Robot extends IterativeRobot {
    
 	// DRIVE
@@ -60,6 +59,9 @@ public class Robot extends IterativeRobot {
 	final int ROLLER_OUT = 5;
 	final int ROLLER_IN = 6;
 	
+	final int WINCH_UP = 3;
+	final int WINCH_DOWN = 2;
+	
 	// ROLLER
 	Talon roller;
 	final int ROLLER_CHANNEL = 5;
@@ -80,7 +82,7 @@ public class Robot extends IterativeRobot {
 	final double STOP_TIME = 1.00;
 	final double MOVE_TIME = 5.00;				// TEST BEFORE USING!!!
 	final double RELEASE_TIME = 3.00;
-	final int AUTON_MODE = 3;
+	final int AUTON_MODE = 2;
 	boolean sequenceComplete;
 		 
 	//ANALOG 
@@ -102,10 +104,14 @@ public class Robot extends IterativeRobot {
 	
 	//PID
 	PIDController gyroPID;
-	final double ROTATE_PID_GAIN_P = 0.001; 
-	final double ROTATE_PID_GAIN_I = 0.0000;   // probably don't need I for positional
-	final double ROTATE_PID_GAIN_D = 0.0002;
+	final double ROTATE_PID_GAIN_P = 0.01; 	//0.01 (?)
+	final double ROTATE_PID_GAIN_I = 0.0000;   //why is the integral constant 0? (0.001)?
+	final double ROTATE_PID_GAIN_D = 0.0002;	//0.00 (?)
 	RotatePIDOutput PIDOutput;
+	
+	// WINCH 
+	Talon winch;
+	final int WINCH_CHANNEL = 8;
 	
 	public void robotInit() {
 	
@@ -145,7 +151,9 @@ public class Robot extends IterativeRobot {
 		//DASHBOARD
 		SmartDashboard.putNumber("gyro", gyro.getAngle());
 		SmartDashboard.putNumber("Inches", ultra.getRangeInches());
-		
+    	SmartDashboard.putBoolean("LimitSwitchTop", topLimitSwitch.get());
+    	SmartDashboard.putBoolean("BottomLimitSwitch", bottomLimitSwitch.get());
+    	
 		//PID
 		PIDOutput = new RotatePIDOutput(robotDrive);
 		gyroPID = new PIDController(ROTATE_PID_GAIN_P, ROTATE_PID_GAIN_I, ROTATE_PID_GAIN_D, gyro ,PIDOutput);
@@ -155,6 +163,8 @@ public class Robot extends IterativeRobot {
 		autonTimer = new Timer();
 		sequenceComplete = false;
 
+		//WINCH
+		winch = new Talon(WINCH_CHANNEL);
 	}
 	
 	public void autonomousPeriodic() {
@@ -245,7 +255,8 @@ public class Robot extends IterativeRobot {
 			autonTimer.stop();
 			autonStage = 2;
 		
-			}else if(autonStage == 2){
+			}
+			else if(autonStage == 2){
 					
 				autonTimer.reset();
 				autonTimer.start();
@@ -257,7 +268,8 @@ public class Robot extends IterativeRobot {
 			
 				autonTimer.stop();
 				autonStage = 3;  
-			}else if(autonStage == 3){
+			}
+			else if(autonStage == 3){
 					
 				autonTimer.reset();
 				autonTimer.start();
@@ -265,21 +277,26 @@ public class Robot extends IterativeRobot {
 				gyro.reset();
 				gyroPID.disable();
 				
+				gyroPID.setSetpoint(-90);
+				gyroPID.enable();
+				
 				while(autonTimer.get() < 15){
 					SmartDashboard.putNumber("gyro", gyro.getAngle());	    		
-					roller.set(0.0);
-					gyroPID.setSetpoint(-90);
-					gyroPID.enable();
+					//roller.set(0.0);
+					
 					//double angle = gyro.getAngle();
 					//autonMove = 0.5;
 					//autonRotate = 0.0;
 					//robotDrive.arcadeDrive(autonMove, -angle * GYRO_CORRECTION);
 				}
 				
+				gyroPID.disable();
+				
 				autonTimer.stop();	    	
 				autonStage = 4;
 				
-			}else if(autonStage == 4){
+			}
+			else if(autonStage == 4){
 				autonTimer.reset();
 				autonTimer.start();
 				
@@ -302,7 +319,8 @@ public class Robot extends IterativeRobot {
 				
 				autonStage = 2;
 				autonTimer.stop();
-			}else if(autonStage == 2){
+			}
+			else if(autonStage == 2){
 				autonTimer.reset();
 				autonTimer.start();
 				
@@ -313,7 +331,8 @@ public class Robot extends IterativeRobot {
 				
 				autonStage = 3;
 				autonTimer.stop();
-			}else if(autonStage == 3){	
+			}
+			else if(autonStage == 3){	
 				autonTimer.reset();
 				autonTimer.start();
 				
@@ -326,7 +345,8 @@ public class Robot extends IterativeRobot {
 				
 				autonStage = 4;
 				autonTimer.stop();
-			}else if(autonStage == 4){
+			}
+			else if(autonStage == 4){
 				autonTimer.reset();
 				autonTimer.start();
 				
@@ -345,6 +365,7 @@ public class Robot extends IterativeRobot {
 		manualDrive();
 		rollerControl();
 		armControl();
+		winchControl();
 		//double range = ultra.getRangeInches();
 	}
 	
@@ -376,57 +397,56 @@ public class Robot extends IterativeRobot {
 	
 	public void rollerControl(){	
 
-		//DOCUMENT: logic.
 		if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
 			roller.set(1.0);
-		}else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
+		}
+		else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
 			roller.set(-1.0);
-		}else{
+		}
+		else{
 			roller.set(0.0);
 		}
 		
 	}
 	
-	public void armControl() {
-		//DOCUMENT: logic.
-		
-		if (xboxController.getRawButton(ARM_UP) && bottomLimitSwitch.get()) {	
-			LEFT_ARM.set(-ARM_SPEED * REVERSE_ARM);
-			RIGHT_ARM.set(ARM_SPEED * REVERSE_ARM);
-		}else if (xboxController.getRawButton(ARM_DOWN) && topLimitSwitch.get()) {
-			LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
-			RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);
-		}else{
-			RIGHT_ARM.set(0.0);
-			LEFT_ARM.set(0.0);
-		}
-	}
+    public void armControl() {
+    	       	
+    	SmartDashboard.putBoolean("LimitSwitchTop", topLimitSwitch.get());
+    	SmartDashboard.putBoolean("BottomLimitSwitch", bottomLimitSwitch.get());
+    	if (xboxController.getRawButton(ARM_UP) && bottomLimitSwitch.get()) {	
+    		
+    		LEFT_ARM.set(-ARM_SPEED * REVERSE_ARM);
+    		RIGHT_ARM.set(ARM_SPEED * REVERSE_ARM);
 
-	public void macroControl(){
-		/*
-		README
-			Teleop doesn't mean that everything has to be driver controlled.
-			For driving over one of the ramps, the process is so precise that
-			at the competition, driver mistakes are likely. Macros can prevent
-			such mistakes.
+    	}
+    	
+    	else if (xboxController.getRawButton(ARM_DOWN) && topLimitSwitch.get()) {
+    		
+    		LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
+    		RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);
 
-			For example,
-				Drive up to the ramp such that the wheel is touching the ramp.
-				Press a button.
-				The robot automatically:
-					brings down the arm
-					drives forward
-					brings up the arm
-					drives over the ramp
-					stops
-				Driver intervention at any point in the macro ends the macro and
-				switches back to manual control.
+    		
+    	}
+    	else{
 
-			This can be implemented using threads - do you know how to do multithreading?
-
-			-Jake
-		*/
-	}
+    		RIGHT_ARM.set(0.0);
+    		LEFT_ARM.set(0.0);
+    		
+    	}
+	
+    }
+    public void winchControl(){
+    	
+    	if (xboxController.getRawButton(WINCH_UP)){
+    		winch.set(0.5);
+    	}
+    	else if (xboxController.getRawButton(WINCH_DOWN)){
+    		winch.set(-0.5);
+    	}
+    	else {
+    		winch.set(0.0);
+    	}
+    }
  /*   public void randomDashboard(){
 		DRIVE_FACTOR = SmartDashboard.getNumber("Drive Factor");
 		ROTATE_FACTOR = SmartDashboard.getNumber("Rotate Factor");
