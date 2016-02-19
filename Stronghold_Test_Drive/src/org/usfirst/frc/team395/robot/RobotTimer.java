@@ -58,6 +58,7 @@ public class RobotTimer extends TimerTask {
 		beginTime = mode == 0 ? /* Autonomous */ 15 : /* Teleop */ 135;
 		remainingTime = beginTime;
 		startTime = System.currentTimeMillis();
+		SmartDashboard.putString("Time Remaining", "" + beginTime);
 	}
 	
 	private String formatTime() {
