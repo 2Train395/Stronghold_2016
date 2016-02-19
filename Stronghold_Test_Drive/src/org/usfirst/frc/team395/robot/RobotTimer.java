@@ -29,7 +29,7 @@ public class RobotTimer extends TimerTask {
 	
 	/**
 	 * Gets the current mode.
-	 * @return
+	 * @return mode The current mode
 	 */
 	public int getMode() {
 		
@@ -62,25 +62,35 @@ public class RobotTimer extends TimerTask {
 	
 	private String formatTime() {
 		
-		remainingTime = (beginTime - elapsedTime) <= 0 ? 0 : beginTime - elapsedTime;
-		String min = String.valueOf(Math.round(remainingTime / 60));
-		String sec = String.valueOf(Math.round(((remainingTime / 60F) % 1) * 60));
-		return (Integer.valueOf(min) <= 9 ? "0" : "") + min + ":" + (Integer.valueOf(sec) <= 9 ? "0" : "") + sec;
+		remainingTime = (beginTime - elapsedTime) <= 0 ? 0 : (beginTime - elapsedTime);
+		int min = Math.round(remainingTime / 60); //Parse minutes
+		int sec = Math.round(((remainingTime / 60F) % 1) * 60); //Parse seconds
+		return (min <= 9 ? "0" : "") + min + ":" + (sec <= 9 ? "0" : "") + sec;
 	}
-
+	
+	//To be run every millisecond
 	@Override
 	public void run() {
 		
+		//Pause timer if it is running, resume if it is not
 		if (JOYSTICK.getRawButton(TOGGLE)) {
 			
 			running = !running;
+			
+			if (running) {
+				
+				beginTime = remainingTime;
+				startTime = System.currentTimeMillis();
+			}
 		}
 		
+		//Set the timer back to the default time that the mode specifies
 		if (JOYSTICK.getRawButton(RESET)) {
 			
 			reset();
 		}
 		
+		//Calculate and display the remaining time if the timer is running
 		if (running) {
 			
 			elapsedTime = (int) ((System.currentTimeMillis() - startTime) / 1000);
