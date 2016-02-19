@@ -113,6 +113,11 @@ public class Robot extends IterativeRobot {
 	Talon winch;
 	final int WINCH_CHANNEL = 8;
 	
+	//TIMER
+	RobotTimer robotTimer;
+	final int TIMER_TOGGLE = 11;
+	final int TIMER_RESET = 12;
+	
 	public void robotInit() {
 	
 		//DRIVE
@@ -165,6 +170,9 @@ public class Robot extends IterativeRobot {
 
 		//WINCH
 		winch = new Talon(WINCH_CHANNEL);
+		
+		//TIMER
+		robotTimer = new RobotTimer(driveStick, TIMER_TOGGLE, TIMER_RESET);
 	}
 	
 	public void autonomousPeriodic() {
@@ -172,6 +180,8 @@ public class Robot extends IterativeRobot {
 		//TODO: Comment the autonomous functions.
 		//I should be able to read the code and know EXACTLY what the robot is doing for each movement.
 		//Right now, I have no idea what this is doing.
+		
+		if (robotTimer.getMode() != 0) robotTimer.setMode(0);
 		
 		if (AUTON_MODE == 1){
 			if(autonStage==1){
@@ -362,6 +372,7 @@ public class Robot extends IterativeRobot {
 	 */
 	public void teleopPeriodic() {
    // 	randomDashboard();
+		if (robotTimer.getMode() != 1) robotTimer.setMode(1);
 		manualDrive();
 		rollerControl();
 		armControl();
