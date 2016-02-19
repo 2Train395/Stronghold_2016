@@ -50,10 +50,14 @@ public class RobotTimer extends TimerTask {
 		else {
 			
 			this.mode = mode;
-			beginTime = mode == 0 ? 15 : 135;
-			remainingTime = beginTime;
-			startTime = System.currentTimeMillis();
+			reset();
 		}
+	}
+	
+	private void reset() {
+		beginTime = mode == 0 ? /* Autonomous */ 15 : /* Teleop */ 135;
+		remainingTime = beginTime;
+		startTime = System.currentTimeMillis();
 	}
 	
 	private String formatTime() {
@@ -74,7 +78,7 @@ public class RobotTimer extends TimerTask {
 		
 		if (JOYSTICK.getRawButton(RESET)) {
 			
-			startTime = mode == 0 ? 15 : 135;
+			reset();
 		}
 		
 		if (running) {
