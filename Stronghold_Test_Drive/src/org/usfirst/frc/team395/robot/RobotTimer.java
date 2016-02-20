@@ -11,7 +11,6 @@ public class RobotTimer extends TimerTask {
 	private final Joystick JOYSTICK; //Joystick to gather input from
 	private final int TOGGLE; //Button on joystick to be used for toggling timer
 	private final int RESET; //Button on joystick to be used for resetting timer
-	private boolean awaitingRelease; //True when the timer is waiting for a button press/release combo
 	private boolean running; //Whether or not the timer is running
 	
 	private int mode; //0 for autonomous, 1 for teleop
@@ -30,7 +29,7 @@ public class RobotTimer extends TimerTask {
 	
 	/**
 	 * Gets the current mode.
-	 * @return the current mode
+	 * @return mode The current mode
 	 */
 	public int getMode() {
 		
@@ -59,8 +58,7 @@ public class RobotTimer extends TimerTask {
 		beginTime = mode == 0 ? /* Autonomous */ 15 : /* Teleop */ 135;
 		remainingTime = beginTime;
 		startTime = System.currentTimeMillis();
-		elapsedTime = 0;
-		SmartDashboard.putString("Time Remaining", formatTime());
+		SmartDashboard.putString("Time Remaining", "" + beginTime);
 	}
 	
 	private String formatTime() {
@@ -75,14 +73,8 @@ public class RobotTimer extends TimerTask {
 	@Override
 	public void run() {
 		
-		//Signal that the timer is waiting for a full button press AND release
-		if (JOYSTICK.getRawButton(TOGGLE)) {
-			
-			awaitingRelease = true;
-		}
-		
 		//Pause timer if it is running, resume if it is not
-		if (awaitingRelease && !JOYSTICK.getRawButton(TOGGLE)) {
+		if (JOYSTICK.getRawButton(TOGGLE)) {
 			
 			running = !running;
 			
@@ -91,8 +83,6 @@ public class RobotTimer extends TimerTask {
 				beginTime = remainingTime;
 				startTime = System.currentTimeMillis();
 			}
-			
-			awaitingRelease = false;
 		}
 		
 		//Set the timer back to the default time that the mode specifies
