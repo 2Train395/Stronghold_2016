@@ -111,7 +111,8 @@ public class Robot extends IterativeRobot {
 	
 	// WINCH 
 	Talon winch;
-	final int WINCH_CHANNEL = 8;
+	final int WINCH_CHANNEL = 9;
+	final double WINCH_SPEED = 1.0;
 	
 	public void robotInit() {
 	
@@ -398,7 +399,7 @@ public class Robot extends IterativeRobot {
 	public void rollerControl(){	
 
 		if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
-			roller.set(1.0);
+			roller.set(0.8);
 		}
 		else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
 			roller.set(-1.0);
@@ -438,11 +439,14 @@ public class Robot extends IterativeRobot {
     public void winchControl(){
     	
     	if (xboxController.getRawButton(WINCH_UP)){
-    		winch.set(0.5);
+    		winch.set(-WINCH_SPEED);
     	}
+    	
+    	// IMPORTANT: DO NOT REVERSE DURING COMPETITION / WHEN RACHETIS ENGAGED!!!!
     	else if (xboxController.getRawButton(WINCH_DOWN)){
-    		winch.set(-0.5);
+    		winch.set(WINCH_SPEED);
     	}
+    	
     	else {
     		winch.set(0.0);
     	}
