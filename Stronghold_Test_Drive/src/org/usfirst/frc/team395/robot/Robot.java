@@ -30,9 +30,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.PIDController;
-
+import edu.wpi.first.wpilibj.AnalogInput;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -54,7 +53,6 @@ public class Robot extends IterativeRobot {
 	final int rearLeftChannel	= 3;
 	final int frontRightChannel	= 1;
 	final int rearRightChannel	= 2;
-	boolean xbRoller = true;
 	
 	// JOYSTICKS
 	Joystick driveStick;
@@ -62,15 +60,10 @@ public class Robot extends IterativeRobot {
 	final int driveStickChannel = 1;
 	final int XBOX_CONTROLLER_CHANNEL = 2;
 
-	final int ROLLER_INXB = 6;
-	final int ROLLER_OUTXB = 5;
-	final int ROLLER_INJS = 1;
-	final int ROLLER_OUTJS = 2;
+	final int ROLLER_IN = 6;
+	final int ROLLER_OUT = 5;
 	final int ARM_UP = 1;
 	final int ARM_DOWN = 4;
-
-	final int ROLLER_OUT = 5;
-	final int ROLLER_IN = 6;
 	
 	final int WINCH_UP = 3;
 	final int WINCH_DOWN = 2;
@@ -95,31 +88,41 @@ public class Robot extends IterativeRobot {
 	final double STOP_TIME = 1.00;
 	final double MOVE_TIME = 5.00;				// TEST BEFORE USING!!!
 	final double RELEASE_TIME = 3.00;
-	final int AUTON_MODE = 2;
+	final int AUTON_MODE = 4;
 	boolean sequenceComplete;
-		 
+	    
 	//ANALOG 
 	AnalogGyro gyro;
 	final int GYRO_CHANNEL =  0;
 	final double GYRO_SENSITIVITY = 0.007;
 	final int TEMP_CHANNEL = 1;
 	final double GYRO_CORRECTION = 0.05;
-	
+
+	AnalogInput ultra;
+	//CONSTANTS
+	final int ULTRASONIC_CHANNEL = 1;
+    final static double SONAR_INCHES_PER_VOLT = 102.4;      // 512/(Vcc = 5V)
+    final static double SONAR_OFFSET = 0.0;                 // Calibration
+    final static double SAMPLE_TIME = 0.01;                 // Seconds
+    final static int DESIRED_SAMPLE_SIZE = 50;              // # of samples
+    // VARIABLES
+    double[] sonarSamples;
+    int sampleCount;
+    double distanceSum;
+    double distance;
+    boolean sonarSampling;
+
 	//DIGITAL
 	DigitalInput topLimitSwitch;
 	DigitalInput bottomLimitSwitch;
 	final int TOP_LIMIT_SWITCH_CHANNEL = 1;
 	final int BOTTOM_LIMIT_SWITCH_CHANNEL = 2;
-	
-	Ultrasonic ultra;
-	final int ULTRASONIC_CHANNEL_IN = 7;
-	final int ULTRASONIC_CHANNEL_OUT = 8;
-	
+		
 	//PID
 	PIDController gyroPID;
-	final double ROTATE_PID_GAIN_P = 0.01; 	//0.01 (?)
+	final double ROTATE_PID_GAIN_P = 0.3; 	//0.01 (?)
 	final double ROTATE_PID_GAIN_I = 0.0000;   //why is the integral constant 0? (0.001)?
-	final double ROTATE_PID_GAIN_D = 0.0002;	//0.00 (?)
+	final double ROTATE_PID_GAIN_D = 0.0000;	//0.00 (?)
 	RotatePIDOutput PIDOutput;
 	
 	// WINCH 
@@ -129,6 +132,7 @@ public class Robot extends IterativeRobot {
 	
 	//TIMER
 	RobotTimer robotTimer;
+	Timer sonarTimer;
 	final int TIMER_TOGGLE = 11;
 	final int TIMER_RESET = 12;
 	
@@ -163,15 +167,21 @@ public class Robot extends IterativeRobot {
 		topLimitSwitch = new DigitalInput(TOP_LIMIT_SWITCH_CHANNEL);
 		bottomLimitSwitch = new DigitalInput(BOTTOM_LIMIT_SWITCH_CHANNEL);
 		
-		ultra = new Ultrasonic(ULTRASONIC_CHANNEL_IN , ULTRASONIC_CHANNEL_OUT);
-		ultra.setEnabled(true);
-		ultra.setAutomaticMode(true);
+		ultra = new AnalogInput(ULTRASONIC_CHANNEL);
+        sonarSamples = new double[DESIRED_SAMPLE_SIZE];
+        sampleCount = 0;
+        distanceSum = 0;
+        distance = 0.0;
+        sonarSampling = false;
+		//ultra.setEnabled(true);
+		//ultra.setAutomaticMode(true);
 		
 		//DASHBOARD
 		SmartDashboard.putNumber("gyro", gyro.getAngle());
-		SmartDashboard.putNumber("Inches", ultra.getRangeInches());
+		SmartDashboard.putNumber("voltage", ultra.getVoltage());
     	SmartDashboard.putBoolean("LimitSwitchTop", topLimitSwitch.get());
     	SmartDashboard.putBoolean("BottomLimitSwitch", bottomLimitSwitch.get());
+    	SmartDashboard.putNumber("distance", distance);
     	
 		//PID
 		PIDOutput = new RotatePIDOutput(robotDrive);
@@ -187,14 +197,13 @@ public class Robot extends IterativeRobot {
 		
 		//TIMER
 		robotTimer = new RobotTimer(driveStick, TIMER_TOGGLE, TIMER_RESET);
+		sonarTimer = new Timer();
+
 	}
 	
+	@SuppressWarnings("unused")
 	public void autonomousPeriodic() {
 
-		//TODO: Comment the autonomous functions.
-		//I should be able to read the code and know EXACTLY what the robot is doing for each movement.
-		//Right now, I have no idea what this is doing.
-		
 		if (robotTimer.getMode() != 0) robotTimer.setMode(0);
 		
 		if (AUTON_MODE == 1){
@@ -303,7 +312,6 @@ public class Robot extends IterativeRobot {
 				
 				gyroPID.setSetpoint(-90);
 				gyroPID.enable();
-				
 				while(autonTimer.get() < 15){
 					SmartDashboard.putNumber("gyro", gyro.getAngle());	    		
 					//roller.set(0.0);
@@ -379,6 +387,24 @@ public class Robot extends IterativeRobot {
 				autonTimer.stop();
 			}
 		}
+		/**else if(AUTON_MODE == 4){
+			double initialAngle;
+			if(autonStage == 1){
+				autonTimer.reset();
+				autonTimer.start();
+				gyro.reset();
+				gyroPID.reset();
+				initialAngle = gyro.getAngle();
+				gyroPID.setSetpoint(initialAngle + 45);
+				gyroPID.setPID(ROTATE_PID_GAIN_P, ROTATE_PID_GAIN_I, ROTATE_PID_GAIN_D);
+				gyroPID.enable();
+				autonStage++;
+			}
+			else if(autonStage == 2){
+				robotDrive.arcadeDrive(0, gyroPID.get());
+				if(gyro.getAngle == initialAngle)
+			}
+		}*/
 	}
 
 	/**
@@ -391,7 +417,6 @@ public class Robot extends IterativeRobot {
 		rollerControl();
 		armControl();
 		winchControl();
-		//double range = ultra.getRangeInches();
 	}
 	
 	/**
@@ -412,7 +437,8 @@ public class Robot extends IterativeRobot {
 		robotDrive.arcadeDrive(driveValue , rotateValue * ROTATE_FACTOR);
 
 		SmartDashboard.putNumber("gyro", gyro.getAngle());
-		SmartDashboard.putNumber("Inches", ultra.getRangeInches());
+		SmartDashboard.putNumber("voltage", ultra.getVoltage());
+		SmartDashboard.putNumber("distance", distance);
 		
 	//	driveValue *= DRIVE_FACTOR;
 		rotateValue *= ROTATE_FACTOR;
@@ -422,10 +448,10 @@ public class Robot extends IterativeRobot {
 	
 	public void rollerControl(){	
 
-		if((xboxController.getRawButton(ROLLER_INXB) && xbRoller) || (driveStick.getRawButton(ROLLER_INJS) && !xbRoller)){	
+		if(xboxController.getRawButton(ROLLER_IN)){	
 			roller.set(0.8);
 		}
-		else if((xboxController.getRawButton(ROLLER_OUTXB) && xbRoller) || (driveStick.getRawButton(ROLLER_OUTJS) && !xbRoller)){
+		else if(xboxController.getRawButton(ROLLER_OUT)){
 			roller.set(-1.0);
 		}
 		else{
@@ -488,5 +514,44 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Arm Speed", ARM_SPEED);
 		SmartDashboard.putNumber("Reverse Arm", REVERSE_ARM);
 	}*/
+    public void computeDistance() {
+        
+        if (!sonarSampling){
+            sonarSampling = true;
+            sonarTimer.reset();
+            sonarTimer.start();
+        }
+        else {
+            
+            if (sonarTimer.get() > SAMPLE_TIME) {
+                
+                sonarSampling = false;
+                sonarTimer.stop();
+                
+                if(sampleCount < sonarSamples.length){
+                    
+                    sonarSamples[sampleCount++] = ultra.getVoltage();
+                    
+                }
+                else {
+                    
+                    distanceSum = 0.0;
+                    
+                    for(int i = 0; i < sampleCount; i++) {
+                        distanceSum += sonarSamples[i];
+                    }
+                    
+                    distance = (distanceSum / ((double)sampleCount)) 
+                                    * SONAR_INCHES_PER_VOLT;
+                    
+                    sampleCount = 0;
+                }
+            }
+                
+        }
+        
+    
+    }
+
 }
 
