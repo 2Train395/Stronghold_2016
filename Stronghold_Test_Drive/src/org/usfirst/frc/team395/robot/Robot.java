@@ -453,8 +453,7 @@ public class Robot extends IterativeRobot {
 		}
 		else{
 			roller.set(0.0);
-		}
-		
+		}	
 	}
 	
     public void armControl() {
@@ -469,34 +468,44 @@ public class Robot extends IterativeRobot {
     	}
     	
     	else if (xboxController.getRawButton(ARM_DOWN) && topLimitSwitch.get()) {
-    		
     		LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
-    		RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);
-
-    		
+    		RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);  		
     	}
     	else{
-
     		RIGHT_ARM.set(0.0);
     		LEFT_ARM.set(0.0);
-    		
-    	}
-	
+    	}	
     }
+
     public void winchControl(){
-    	
-    	if (xboxController.getRawButton(WINCH_UP)){
-    		winch.set(-WINCH_SPEED);
-    	}
-    	
-    	// IMPORTANT: DO NOT REVERSE DURING COMPETITION / WHEN RACHETIS ENGAGED!!!!
-    	else if (xboxController.getRawButton(WINCH_DOWN)){
-    		winch.set(WINCH_SPEED);
-    	}
-    	
-    	else {
-    		winch.set(0.0);
-    	}
+    	if (driveStick.getRawButton(UNLOCK_BACK_ARM)){
+    		if (xboxController.getRawButton(SAFTEY_UNLOCK)){
+    			safteyLock.set(1.0);
+    		}
+    		else{
+    			safteyLock.set(0.0);
+    		}
+    		
+	    	if (xboxController.getRawButton(WINCH_UP)){
+	    		winch.set(-WINCH_SPEED);
+	    	}
+	    	
+	    	// IMPORTANT: DO NOT REVERSE DURING COMPETITION / WHEN RACHETIS ENGAGED!!!!
+	    	else if (xboxController.getRawButton(WINCH_DOWN)){
+	    		winch.set(WINCH_SPEED);
+	    	}
+	    	
+	    	else {
+	    		winch.set(0.0);
+	    	}
+	    	if(xboxController.getRawButton(HOOK_RELEASE)){
+	    		hookDetach.set(1.0);
+	    	}
+	    	
+	    	else{
+	    		hookDetach.set(0.0);
+	    	}
+    	}	
     }
  /*   public void randomDashboard(){
 		DRIVE_FACTOR = SmartDashboard.getNumber("Drive Factor");
