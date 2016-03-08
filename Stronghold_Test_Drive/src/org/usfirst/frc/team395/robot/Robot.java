@@ -1,23 +1,9 @@
-//
-//   _______ ______________                       ___ _______    ______     _________    ______ ______________ ______________   ________  ________
-//  /       \              \                    _(  _)       \  /      \   /         \  /      \              \              \ /        \/        \
-// |    _    \_____    _____\             __   (___)   ___    \/        \ |   ____    \/        \_____    _____\_____    _____/    _____/   ______/
-//  \__/ \    |    |  |                  (__)      |  /   \   |   ____   \|  |    \   /   ____   \    |  |           |  |    /    /    /   /
-//      /    |     |  |__ ____ ___  ___ __ __ ____ |  \___/   /  /    \   \  |____/  /   /    \   \   |  |           |      /    /     \   \_____
-//     /    /      |  |  '   /    ``   /  /  '_   \|         /  |      |   |  ____  |   |      |   |  |  |           |  |  |    |       \        \
-//    /    /       |  |   __/   __    /  /  |  \   |   ___   \   \____/   /  |    \  \   \____/   /   |  |           |  |   \    \       \____    \
-//   /    /________|  |  |  |  (__|   |  |  |  |   |  |   \   \          /|  |____/   \          /    |  |___________|  |____\    \_____ _____|   |
-//  |              |  |  |  |         |  |  |  |   |  |    \   \        / |           /\        /     |  |                    \         \         /
-//  |______________|__|__|___\_____/\_|__|__|__|___|__|_____\___\______/___\_________/__\______/______|__|_____________________\________/________/
-//  /                                                                                                                                            \
-// |      --      --      --      --      --      --      --      --      --      --      --      --      --      --      --      --      --      |
-//  \____________________________________________________________________________________________________________________________________________/
-//   /      \      /      \                 /      \      /      \                  /      \      /      \                 /      \      /      \
-//  /    ____\____/____    \               /    ____\____/____    \                /    ____\____/____    \               /    ____\____/____    \
-// |    ()____________()    |             |    ()____________()    |              |    ()____________()    |             |    ()____________()    |
-//  \        /    \        /               \        /    \        /                \        /    \        /               \        /    \        /
-//   \______/      \______/                 \______/      \______/                  \______/      \______/                 \______/      \______/
-//
+//  ___ _______        _       _____   ____  ____   ____ _______ _____ _____  _____ 
+// |__ \__   __|      (_)     |  __ \ / __ \|  _ \ / __ \__   __|_   _/ ____|/ ____|
+//    ) | | |_ __ __ _ _ _ __ | |__) | |  | | |_) | |  | | | |    | || |    | (___  
+//   / /  | | '__/ _` | | '_ \|  _  /| |  | |  _ <| |  | | | |    | || |     \___ \ 
+//  / /_  | | | | (_| | | | | | | \ \| |__| | |_) | |__| | | |   _| || |____ ____) |
+// |____| |_|_|  \__,_|_|_| |_|_|  \_\\____/|____/ \____/  |_|  |_____\_____|_____/ 
 
 package org.usfirst.frc.team395.robot;
 
@@ -32,7 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.AnalogInput;
-
+import edu.wpi.first.wpilibj.Servo;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
@@ -67,6 +53,9 @@ public class Robot extends IterativeRobot {
 	
 	final int WINCH_UP = 3;
 	final int WINCH_DOWN = 2;
+	final int UNLOCK_BACK_ARM = 7;
+	final int SAFTEY_UNLOCK = 7;
+	final int HOOK_RELEASE = 8;
 	
 	// ROLLER
 	Talon roller;
@@ -79,18 +68,7 @@ public class Robot extends IterativeRobot {
 	final int LEFT_ARM_CHANNEL = 6;
 	final int RIGHT_ARM_CHANNEL = 7;
 	double REVERSE_ARM = 1;
-		
-	// AUTONOMOUS
-	double autonMove;
-	double autonRotate;
-	int autonStage = 1;
-	Timer autonTimer;
-	final double STOP_TIME = 1.00;
-	final double MOVE_TIME = 5.00;				// TEST BEFORE USING!!!
-	final double RELEASE_TIME = 3.00;
-	final int AUTON_MODE = 4;
-	boolean sequenceComplete;
-	    
+		    
 	//ANALOG 
 	AnalogGyro gyro;
 	final int GYRO_CHANNEL =  0;
@@ -125,10 +103,16 @@ public class Robot extends IterativeRobot {
 	final double ROTATE_PID_GAIN_D = 0.0000;	//0.00 (?)
 	RotatePIDOutput PIDOutput;
 	
-	// WINCH 
+	//WINCH 
 	Talon winch;
-	final int WINCH_CHANNEL = 9;
+	final int WINCH_CHANNEL = 8;
 	final double WINCH_SPEED = 1.0;
+	
+	//SERVO
+	Servo safteyLock;
+	Servo hookDetach;
+	final int SAFETY_LOCK_CHANNEL = 0;
+	final int HOOK_DETACH_CHANNEL = 9;
 	
 	//TIMER
 	RobotTimer robotTimer;
@@ -136,6 +120,17 @@ public class Robot extends IterativeRobot {
 	final int TIMER_TOGGLE = 11;
 	final int TIMER_RESET = 12;
 	
+	// AUTONOMOUS
+	double autonMove;
+	double autonRotate;
+	int autonStage = 1;
+	Timer autonTimer;
+	final double STOP_TIME = 1.00;
+	final double MOVE_TIME = 5.00;				// TEST BEFORE USING!!!
+	final double RELEASE_TIME = 3.00;
+	final int AUTON_MODE = 4;
+	boolean sequenceComplete;
+
 	public void robotInit() {
 	
 		//DRIVE
@@ -194,6 +189,8 @@ public class Robot extends IterativeRobot {
 
 		//WINCH
 		winch = new Talon(WINCH_CHANNEL);
+		safteyLock = new Servo(SAFETY_LOCK_CHANNEL);
+		hookDetach = new Servo(HOOK_DETACH_CHANNEL);
 		
 		//TIMER
 		robotTimer = new RobotTimer(driveStick, TIMER_TOGGLE, TIMER_RESET);
