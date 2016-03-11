@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.Servo;
 /**
@@ -98,9 +100,9 @@ public class Robot extends IterativeRobot {
 		
 	//PID
 	PIDController gyroPID;
-	final double ROTATE_PID_GAIN_P = 0.3; 	//0.01 (?)
-	final double ROTATE_PID_GAIN_I = 0.0000;   //why is the integral constant 0? (0.001)?
-	final double ROTATE_PID_GAIN_D = 0.0000;	//0.00 (?)
+	final double ROTATE_PID_GAIN_P = 0.5; 	//0.01 (?)
+	final double ROTATE_PID_GAIN_I = 0.0010;   //why is the integral constant 0? (0.001)?
+	final double ROTATE_PID_GAIN_D = 0.0010;	//0.00 (?)
 	RotatePIDOutput PIDOutput;
 	
 	//WINCH 
@@ -109,10 +111,17 @@ public class Robot extends IterativeRobot {
 	final double WINCH_SPEED = 1.0;
 	
 	//SERVO
-	Servo safteyLock;
+	//Servo safetyLock;
+	//final int SAFETY_LOCK_CHANNEL = 0;
 	Servo hookDetach;
-	final int SAFETY_LOCK_CHANNEL = 0;
-	final int HOOK_DETACH_CHANNEL = 9;
+	final int HOOK_DETACH_CHANNEL = 0;
+	
+	//SCISSORS JACK
+	final int SCISSORS_JACK_CHANNEL = 1;
+	Relay scissorsJack;
+	Boolean unlock;
+	final int SCISSORS_JACK_UP = 7;
+	final int SCISSORS_JACK_DOWN = 8;
 	
 	//TIMER
 	RobotTimer robotTimer;
@@ -128,7 +137,7 @@ public class Robot extends IterativeRobot {
 	final double STOP_TIME = 1.00;
 	final double MOVE_TIME = 5.00;				// TEST BEFORE USING!!!
 	final double RELEASE_TIME = 3.00;
-	final int AUTON_MODE = 4;
+	final int AUTON_MODE = 3;
 	boolean sequenceComplete;
 
 	public void robotInit() {
@@ -189,9 +198,12 @@ public class Robot extends IterativeRobot {
 
 		//WINCH
 		winch = new Talon(WINCH_CHANNEL);
-		safteyLock = new Servo(SAFETY_LOCK_CHANNEL);
+		//safteyLock = new Servo(SAFETY_LOCK_CHANNEL);
+		unlock = false;
 		hookDetach = new Servo(HOOK_DETACH_CHANNEL);
 		
+		//SCISSORS JACK
+		scissorsJack = new Relay(SCISSORS_JACK_CHANNEL); 
 		//TIMER
 		robotTimer = new RobotTimer(driveStick, TIMER_TOGGLE, TIMER_RESET);
 		sonarTimer = new Timer();
@@ -201,7 +213,7 @@ public class Robot extends IterativeRobot {
 	@SuppressWarnings("unused")
 	public void autonomousPeriodic() {
 
-		if (robotTimer.getMode() != 0) robotTimer.setMode(0);
+		//if (robotTimer.getMode() != 0) robotTimer.setMode(0);
 		
 		if (AUTON_MODE == 1){
 			if(autonStage==1){
@@ -408,12 +420,13 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during operator control
 	 */
 	public void teleopPeriodic() {
-   // 	randomDashboard();
-		if (robotTimer.getMode() != 1) robotTimer.setMode(1);
+ 
+		//if (robotTimer.getMode() != 1) robotTimer.setMode(1);
 		manualDrive();
 		rollerControl();
 		armControl();
 		winchControl();
+		computeDistance();
 	}
 	
 	/**
@@ -479,48 +492,45 @@ public class Robot extends IterativeRobot {
 
     public void winchControl(){
     	if (driveStick.getRawButton(UNLOCK_BACK_ARM)){
-    		if (xboxController.getRawButton(SAFTEY_UNLOCK)){
-    			safteyLock.set(1.0);
-    		}
-    		else{
-    			safteyLock.set(0.0);
-    		}
-    		
-	    	if (xboxController.getRawButton(WINCH_UP)){
-	    		winch.set(-WINCH_SPEED);
+    		unlock = true;
+    		/*	if (xboxController.getRawButton(SAFTEY_UNLOCK)){
+			safteyLock.set(1.0);
+		}
+		else{
+			safteyLock.set(0.0);
+		}*/
+    	}
+    	if (unlock == true){
+	    	if (xboxController.getRawButton(SCISSORS_JACK_UP)){
+	    		scissorsJack.set(Relay.Value.valueOf("kForward"));
+	    	}
+	    	else if(xboxController.getRawButton(SCISSORS_JACK_DOWN)){
+	    		scissorsJack.set(Relay.Value.valueOf("kBackward"));
+	    	}
+	    	else{
+	    		scissorsJack.set(Relay.Value.valueOf("kOff"));
 	    	}
 	    	
+    		if (xboxController.getRawButton(WINCH_UP)){
+	    		winch.set(-WINCH_SPEED);
+	    	}
 	    	// IMPORTANT: DO NOT REVERSE DURING COMPETITION / WHEN RACHETIS ENGAGED!!!!
 	    	else if (xboxController.getRawButton(WINCH_DOWN)){
 	    		winch.set(WINCH_SPEED);
 	    	}
-	    	
 	    	else {
 	    		winch.set(0.0);
 	    	}
+    		
 	    	if(xboxController.getRawButton(HOOK_RELEASE)){
 	    		hookDetach.set(1.0);
 	    	}
-	    	
 	    	else{
 	    		hookDetach.set(0.0);
 	    	}
-    	}	
+    	}
     }
- /*   public void randomDashboard(){
-		DRIVE_FACTOR = SmartDashboard.getNumber("Drive Factor");
-		ROTATE_FACTOR = SmartDashboard.getNumber("Rotate Factor");
-		ARM_SPEED = SmartDashboard.getNumber("Arm Speed");
-		REVERSE_ARM = SmartDashboard.getNumber("Reverse Arm");
-		if(REVERSE_ARM != -1 || REVERSE_ARM != 1){
-			REVERSE_ARM = 1;
-		}
-		SmartDashboard.putNumber("Drive Factor", DRIVE_FACTOR);
-		SmartDashboard.putNumber("Rotate Factor", ROTATE_FACTOR);
-		SmartDashboard.putNumber("Arm Speed", ARM_SPEED);
-		SmartDashboard.putNumber("Reverse Arm", REVERSE_ARM);
-	}*/
-    public void computeDistance() {
+     public void computeDistance() {
         
         if (!sonarSampling){
             sonarSampling = true;
@@ -556,7 +566,6 @@ public class Robot extends IterativeRobot {
                 
         }
         
-    
     }
 
 }
