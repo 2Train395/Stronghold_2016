@@ -55,7 +55,7 @@ public class Robot extends IterativeRobot {
 	
 	final int WINCH_UP = 3;
 	final int WINCH_DOWN = 2;
-	final int UNLOCK_BACK_ARM = 7;
+	final int UNLOCK_BACK_ARM = 3;
 	final int SAFTEY_UNLOCK = 7;
 	final int HOOK_RELEASE = 8;
 	
@@ -65,10 +65,8 @@ public class Robot extends IterativeRobot {
 	final double ROLLER_SPEED = 0.75;					//----TEST
 
 	// ARM
-	Talon RIGHT_ARM;
-	Talon LEFT_ARM;
-	final int LEFT_ARM_CHANNEL = 6;
-	final int RIGHT_ARM_CHANNEL = 7;
+	Talon ARMS;
+	final int BOTH_ARMS_CHANNEL = 6;
 	double REVERSE_ARM = 1;
 		    
 	//ANALOG 
@@ -111,17 +109,19 @@ public class Robot extends IterativeRobot {
 	final double WINCH_SPEED = 1.0;
 	
 	//SERVO
-	//Servo safetyLock;
-	//final int SAFETY_LOCK_CHANNEL = 0;
+	Servo safetyLock;
+	final int SAFETY_LOCK_CHANNEL = 7;
 	Servo hookDetach;
 	final int HOOK_DETACH_CHANNEL = 0;
+	double HOOK_DETACH_SERVO_POSITION = 0.75;
+	double SAFETY_LOCK_SERVO_POSITION = 0.55;
 	
 	//SCISSORS JACK
 	final int SCISSORS_JACK_CHANNEL = 1;
 	Relay scissorsJack;
 	Boolean unlock;
-	final int SCISSORS_JACK_UP = 7;
-	final int SCISSORS_JACK_DOWN = 8;
+	final int SCISSORS_JACK_UP = 9;
+	final int SCISSORS_JACK_DOWN = 10;
 	
 	//TIMER
 	RobotTimer robotTimer;
@@ -135,7 +135,7 @@ public class Robot extends IterativeRobot {
 	int autonStage = 1;
 	Timer autonTimer;
 	final double STOP_TIME = 1.00;
-	final double MOVE_TIME = 5.00;				// TEST BEFORE USING!!!
+	final double MOVE_TIME = 4.00;				// TEST BEFORE USING!!!
 	final double RELEASE_TIME = 3.00;
 	final int AUTON_MODE = 3;
 	boolean sequenceComplete;
@@ -159,8 +159,7 @@ public class Robot extends IterativeRobot {
 		roller = new Talon(ROLLER_CHANNEL);
 		
 		// ARM
-		LEFT_ARM = new Talon(LEFT_ARM_CHANNEL);
-		RIGHT_ARM = new Talon(RIGHT_ARM_CHANNEL);
+		ARMS = new Talon(BOTH_ARMS_CHANNEL);
 		
 		//ANALOG
 		gyro = new AnalogGyro(GYRO_CHANNEL);
@@ -179,13 +178,6 @@ public class Robot extends IterativeRobot {
         sonarSampling = false;
 		//ultra.setEnabled(true);
 		//ultra.setAutomaticMode(true);
-		
-		//DASHBOARD
-		SmartDashboard.putNumber("gyro", gyro.getAngle());
-		SmartDashboard.putNumber("voltage", ultra.getVoltage());
-    	SmartDashboard.putBoolean("LimitSwitchTop", topLimitSwitch.get());
-    	SmartDashboard.putBoolean("BottomLimitSwitch", bottomLimitSwitch.get());
-    	SmartDashboard.putNumber("distance", distance);
     	
 		//PID
 		PIDOutput = new RotatePIDOutput(robotDrive);
@@ -198,16 +190,27 @@ public class Robot extends IterativeRobot {
 
 		//WINCH
 		winch = new Talon(WINCH_CHANNEL);
-		//safteyLock = new Servo(SAFETY_LOCK_CHANNEL);
+		safetyLock = new Servo(SAFETY_LOCK_CHANNEL);
 		unlock = false;
 		hookDetach = new Servo(HOOK_DETACH_CHANNEL);
 		
 		//SCISSORS JACK
 		scissorsJack = new Relay(SCISSORS_JACK_CHANNEL); 
+
 		//TIMER
 		robotTimer = new RobotTimer(driveStick, TIMER_TOGGLE, TIMER_RESET);
 		sonarTimer = new Timer();
 
+		//DASHBOARD
+		SmartDashboard.putNumber("gyro", gyro.getAngle());
+		SmartDashboard.putNumber("voltage", ultra.getVoltage());
+    	SmartDashboard.putBoolean("LimitSwitchTop", topLimitSwitch.get());
+    	SmartDashboard.putBoolean("BottomLimitSwitch", bottomLimitSwitch.get());
+    	SmartDashboard.putNumber("distance", distance);
+    	SmartDashboard.putNumber("Servo Unlock", safetyLock.getAngle());
+    	SmartDashboard.putNumber("Servo Detach", hookDetach.getAngle());	
+    	SmartDashboard.putBoolean("Arm Up", xboxController.getRawButton(ARM_UP));
+    	SmartDashboard.putBoolean("Roller In", xboxController.getRawButton(ROLLER_IN));
 	}
 	
 	@SuppressWarnings("unused")
@@ -352,7 +355,7 @@ public class Robot extends IterativeRobot {
 				autonTimer.reset();
 				autonTimer.start();
 				
-				while(autonTimer.get() < MOVE_TIME){
+				while(autonTimer.get() < (MOVE_TIME + 1.00)){
 					autonMove = -0.70;		//MAGIC NUMBER, use constants
 					autonRotate = 0.0;
 					robotDrive.arcadeDrive(autonMove, autonRotate);
@@ -438,7 +441,8 @@ public class Robot extends IterativeRobot {
 
 	public void manualDrive(){
 
-		//CONSIDER: logarithmic scale for more precise controls.
+		hookDetach.set(HOOK_DETACH_SERVO_POSITION);
+		safetyLock.set(SAFETY_LOCK_SERVO_POSITION);
 		
 		double rotateValue = driveStick.getZ();;
 		
@@ -446,14 +450,20 @@ public class Robot extends IterativeRobot {
 			
 		robotDrive.arcadeDrive(driveValue , rotateValue * ROTATE_FACTOR);
 
+		SmartDashboard.putNumber("DRIVE", driveValue);
 		SmartDashboard.putNumber("gyro", gyro.getAngle());
 		SmartDashboard.putNumber("voltage", ultra.getVoltage());
 		SmartDashboard.putNumber("distance", distance);
-		
+    	SmartDashboard.putBoolean("Arm Up", xboxController.getRawButton(ARM_UP));
+    	SmartDashboard.putBoolean("Roller In", xboxController.getRawButton(ROLLER_IN));
+    	
 	//	driveValue *= DRIVE_FACTOR;
 		rotateValue *= ROTATE_FACTOR;
 		robotDrive.arcadeDrive(driveValue, rotateValue);
 		
+    	SmartDashboard.putNumber("Servo Unlock", safetyLock.getAngle());
+    	SmartDashboard.putNumber("Servo Detach", hookDetach.getAngle());
+
 	}
 	
 	public void rollerControl(){	
@@ -474,44 +484,42 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("LimitSwitchTop", topLimitSwitch.get());
     	SmartDashboard.putBoolean("BottomLimitSwitch", bottomLimitSwitch.get());
     	if (xboxController.getRawButton(ARM_UP) && bottomLimitSwitch.get()) {	
-    		
-    		LEFT_ARM.set(-ARM_SPEED * REVERSE_ARM);
-    		RIGHT_ARM.set(ARM_SPEED * REVERSE_ARM);
-
+    		ARMS.set(-ARM_SPEED * REVERSE_ARM);
     	}
     	
     	else if (xboxController.getRawButton(ARM_DOWN) && topLimitSwitch.get()) {
-    		LEFT_ARM.set(ARM_SPEED * REVERSE_ARM);
-    		RIGHT_ARM.set(-ARM_SPEED * REVERSE_ARM);  		
+    		ARMS.set(ARM_SPEED * REVERSE_ARM);  		
     	}
     	else{
-    		RIGHT_ARM.set(0.0);
-    		LEFT_ARM.set(0.0);
+    		ARMS.set(0.0);
     	}	
     }
 
     public void winchControl(){
+    	
     	if (driveStick.getRawButton(UNLOCK_BACK_ARM)){
     		unlock = true;
-    		/*	if (xboxController.getRawButton(SAFTEY_UNLOCK)){
-			safteyLock.set(1.0);
-		}
-		else{
-			safteyLock.set(0.0);
-		}*/
     	}
     	if (unlock == true){
+    		
+    		// To unlock the jack
+    		if (xboxController.getRawButton(SAFTEY_UNLOCK)){
+				SAFETY_LOCK_SERVO_POSITION = 0.8;
+			}
+    		
+    		// To spring the jack
 	    	if (xboxController.getRawButton(SCISSORS_JACK_UP)){
-	    		scissorsJack.set(Relay.Value.valueOf("kForward"));
+	    		scissorsJack.set(Relay.Value.valueOf("kReverse"));
 	    	}
-	    	else if(xboxController.getRawButton(SCISSORS_JACK_DOWN)){
-	    		scissorsJack.set(Relay.Value.valueOf("kBackward"));
+	    	else if(xboxController.getRawButton(WINCH_UP)){
+	    		scissorsJack.set(Relay.Value.valueOf("kForward"));
 	    	}
 	    	else{
 	    		scissorsJack.set(Relay.Value.valueOf("kOff"));
 	    	}
 	    	
-    		if (xboxController.getRawButton(WINCH_UP)){
+	    	// To winch up/pull up
+    		if (xboxController.getRawButton(SCISSORS_JACK_DOWN)){
 	    		winch.set(-WINCH_SPEED);
 	    	}
 	    	// IMPORTANT: DO NOT REVERSE DURING COMPETITION / WHEN RACHETIS ENGAGED!!!!
@@ -523,10 +531,7 @@ public class Robot extends IterativeRobot {
 	    	}
     		
 	    	if(xboxController.getRawButton(HOOK_RELEASE)){
-	    		hookDetach.set(1.0);
-	    	}
-	    	else{
-	    		hookDetach.set(0.0);
+	    		HOOK_DETACH_SERVO_POSITION = 0.0;
 	    	}
     	}
     }
